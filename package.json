@@ -1,0 +1,6 @@
+{
+  "name": "Game Builder",
+  "version": "0.0.1",
+  "main": "index.html",
+  "chromium-args": "--allow-file-access-from-files"
+}
