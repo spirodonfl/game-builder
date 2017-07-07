@@ -1,19 +1,3 @@
-// Only for reference purposes. Will go away.
-// interface SampleElements {
-//     one: HTMLInputElement;
-//     two: HTMLAnchorElement;
-//     three: HTMLButtonElement;
-//     four: HTMLCanvasElement;
-//     five: HTMLDivElement;
-//     six: HTMLDocument;
-//     seven: HTMLElement;
-//     eight: HTMLImageElement;
-//     nine: HTMLOptionElement;
-//     ten: HTMLOptionsCollection;
-//     eleven: HTMLTextAreaElement;
-//     twelve: CanvasRenderingContext2D;
-// }
-
 interface IEventEmitter {
     // Emits a single event
     emit(eventName: string): void;

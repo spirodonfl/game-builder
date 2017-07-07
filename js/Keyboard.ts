@@ -8,6 +8,11 @@ interface IKeyboardKeyIDs {
 }
 
 class cKEYBOARD implements IKeyboard {
+    private static _instance: cKEYBOARD;
+    public static get Instance() {
+        return this._instance || (this._instance = new this());
+    }
+
     ee: EventEmitter;
     shiftKey: boolean;
     ctrlKey: boolean;
@@ -23,11 +28,6 @@ class cKEYBOARD implements IKeyboard {
         this.IDs = {
             'h': 72, 'i': 73, 'shift': 16, 'f5': 116
         }
-    }
-
-    private static _instance: cKEYBOARD;
-    public static get Instance() {
-        return this._instance || (this._instance = new this());
     }
 
     initialize() {
