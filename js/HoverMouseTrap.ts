@@ -11,6 +11,8 @@ interface IHoverMouseTrap {
     handleMouseDown(e: MouseEvent): void;
     // Activates when the mouse is let go (unclicked) over the div element
     handleMouseUp(e: MouseEvent): void;
+    // Returns a grid based set of coordinates (based on 32x32 per square grid)
+    calculateCoordinates(coordX: number, coordY: number): Array<number>;
 }
 
 class cHOVERMOUSETRAP implements IHoverMouseTrap {
@@ -37,9 +39,9 @@ class cHOVERMOUSETRAP implements IHoverMouseTrap {
         let elementMouseTrap = SF.gei('mouse_trap');
         if (elementMouseTrap instanceof HTMLDivElement) {
             this.divMouseTrap = elementMouseTrap;
-            this.divMouseTrap.addEventListener( 'mousemove', this.handleMouseMove );
-            this.divMouseTrap.addEventListener( 'mousedown', this.handleMouseDown );
-            this.divMouseTrap.addEventListener( 'mouseup', this.handleMouseUp );
+            this.divMouseTrap.addEventListener( 'mousemove', this.handleMouseMove.bind(this) );
+            this.divMouseTrap.addEventListener( 'mousedown', this.handleMouseDown.bind(this) );
+            this.divMouseTrap.addEventListener( 'mouseup', this.handleMouseUp.bind(this) );
         }
         let elementCanvasHover = SF.gei('canvas_hover');
         if (elementCanvasHover instanceof HTMLCanvasElement) {

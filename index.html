@@ -11,7 +11,7 @@
         ??
 
         <canvas id="canvas_hover" width="32" height="32"></canvas>
-        <div id="mouse_trap"></div>
+        <div id="mouse_trap" style="width: 32px; height: 32px;"></div>
 
         <script type="text/javascript" src="js/SF.js"></script>
         <script type="text/javascript" src="js/EventEmitter.js"></script>
@@ -22,6 +22,7 @@
             KEYBOARD.ee.on('KU:'+KEYBOARD.IDs['f5'], function () {
                 window.location.reload();
             });
+            HOVERMOUSETRAP.drawMove = true;
             HOVERMOUSETRAP.initialize();
         </script>
     </body>
