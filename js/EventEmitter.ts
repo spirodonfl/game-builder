@@ -13,52 +13,79 @@ interface SampleElements {
 }
 
 interface IEventEmitter {
-    emit(eventName: string): void; // Emits a single event
-    flush(): void; // Flushes all events in a queue
-    queue(): void; // Queues an event internally for flushing
-    on(eventName: string, subscriber: (...args: any[]) => void): void; // A listener subscribes to a particular event any time it's emitted
-    once(eventName: string, subscriber: (...args: any[]) => void): void; // A listener subscribes to a particular event for one emission only
+    // Emits a single event
+    emit(eventName: string): void;
+    // Flushes all events in a queue
+    flush(...args: any[]): void;
+    // Queues an event internally for flushing
+    queue(eventName: string): void;
+    // A listener subscribes to a particular event any time it's emitted
+    on(eventName: string, subscriber: (...args: any[]) => void): void;
+    // A listener subscribes to a particular event for one emission only
+    once(eventName: string, subscriber: (...args: any[]) => void): void;
+    // Add an event so it's available for subscribers and emissions
+    registerEvent(name: string): void;
+    // Remove an event entirely
+    // removeEvent(name: string): void;
+    // Remove all subscribers from event
+    // removeEventSubscribers(name: string): void;
+}
+
+interface IEventEmitterEventSubs {
+    once: Array<any>;
+    on: Array<any>
+}
+interface IEventEmitterEvent {
+    [key: string]: IEventEmitterEventSubs;
 }
 
 class EventEmitter implements IEventEmitter {
-    private _subscribers: Array<() => void>; // TODO: Should this be an object or function?
-    // private _subscribers: Array<(data: string) => void>;
-    // private _subscribers: Array<object>;
-    // private _subscribers: Array<any>;
-    private _events: Array<string>;
     private _queue: Array<string>;
+    private _events: IEventEmitterEvent;
 
     constructor() {
-        this._subscribers = [];
-        this._events = [];
+        this._events = {};
         this._queue = [];
     }
-    on(eventName: string, subscriber: (...args: any[]) => void) {
-        this._subscribers.push(subscriber);
-        this._events.push(eventName);
-    }
-    once(eventName: string, subscriber: (...args: any[]) => void) {
-        this._subscribers.push(subscriber);
-        this._events.push(eventName);
-    }
-    emit(eventName: string, ...args: any[]) {
-        let exists = false;
-        for (let x = 0; x < this._events.length; ++x ) {
-            if (this._events[x] === eventName) {
-                exists = true;
-                break;
+    registerEvent(name: string) {
+        if (this._events[name] === undefined) {
+            this._events[name] = {
+                once: [],
+                on: []
             }
         }
-        if (exists) {
-            console.log('YEP');
-        }
-        for (let x = 0; x < this._subscribers.length; ++x) {
-            let subscriber = this._subscribers[x];
+    }
+    on(eventName: string, subscriber: (...args: any[]) => void) {
+        this.registerEvent(eventName);
+        this._events[eventName].on.push(subscriber);
+    }
+    once(eventName: string, subscriber: (...args: any[]) => void) {
+        this.registerEvent(eventName);
+        this._events[eventName].once.push(subscriber);
+    }
+    emit(eventName: string, ...args: any[]) {
+        if (this._events[eventName] === undefined) { return false; }
+        let event = this._events[eventName];
+        for (let x = 0; x < event.on.length; ++x ) {
+            let subscriber = event.on[x];
             subscriber.call(this, ...args);
         }
+        for (let x = 0; x < event.once.length; ++x ) {
+            let subscriber = event.once[x];
+            subscriber.call(this, ...args);
+            delete(event.once[x]);
+        }
     }
-    queue() {}
-    flush() {}
+    queue(eventName: string) {
+        if (this._events[eventName] === undefined) { return false; }
+        this._queue.push(eventName);
+    }
+    flush(...args: any[]) {
+        for(let x = 0; x < this._queue.length; ++x) {
+            let eventName = this._queue[x];
+            this.emit(eventName, ...args);
+        }
+    }
 }
 
 let test = new EventEmitter();
@@ -66,4 +93,7 @@ let func = function (one: string, two: number) {
     console.log(one, two);
 };
 test.on('TEST', func);
-test.emit('TEST', 'poop', 'my scoop', 'hadoop');
+test.queue('TEST');
+test.queue('TEST2');
+// test.emit('TEST', 'poop', 'my scoop', 'hadoop');
+test.flush('poop','my scoop', 'hadoop');
