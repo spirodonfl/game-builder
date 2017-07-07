@@ -1,16 +1,18 @@
-interface SampleElements {
-    one: HTMLInputElement;
-    two: HTMLAnchorElement;
-    three: HTMLButtonElement;
-    four: HTMLCanvasElement;
-    five: HTMLDivElement;
-    six: HTMLDocument;
-    seven: HTMLElement;
-    eight: HTMLImageElement;
-    nine: HTMLOptionElement;
-    ten: HTMLOptionsCollection;
-    eleven: HTMLTextAreaElement;
-}
+// Only for reference purposes. Will go away.
+// interface SampleElements {
+//     one: HTMLInputElement;
+//     two: HTMLAnchorElement;
+//     three: HTMLButtonElement;
+//     four: HTMLCanvasElement;
+//     five: HTMLDivElement;
+//     six: HTMLDocument;
+//     seven: HTMLElement;
+//     eight: HTMLImageElement;
+//     nine: HTMLOptionElement;
+//     ten: HTMLOptionsCollection;
+//     eleven: HTMLTextAreaElement;
+//     twelve: CanvasRenderingContext2D;
+// }
 
 interface IEventEmitter {
     // Emits a single event
@@ -87,13 +89,3 @@ class EventEmitter implements IEventEmitter {
         }
     }
 }
-
-let test = new EventEmitter();
-let func = function (one: string, two: number) {
-    console.log(one, two);
-};
-test.on('TEST', func);
-test.queue('TEST');
-test.queue('TEST2');
-// test.emit('TEST', 'poop', 'my scoop', 'hadoop');
-test.flush('poop','my scoop', 'hadoop');
