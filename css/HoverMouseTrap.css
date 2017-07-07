@@ -1,0 +1,10 @@
+#canvas_hover {
+    position: absolute;
+    z-index: 150;
+}
+#mouse_trap {
+    position: absolute;
+    z-index: 151;
+    width: 32px;
+    height: 32px;
+}
