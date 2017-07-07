@@ -1,10 +1,15 @@
-interface IKeyboard {
-    // Listens to the window for keyboard events
-    initialize(): void;
-}
-
 interface IKeyboardKeyIDs {
     [key: string]: number
+}
+
+interface IKeyboard {
+    ee: EventEmitter;
+    shiftKey: boolean;
+    ctrlKey: boolean;
+    altKey: boolean;
+    IDs: IKeyboardKeyIDs;
+    // Listens to the window for keyboard events
+    initialize(): void;
 }
 
 class cKEYBOARD implements IKeyboard {
