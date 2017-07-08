@@ -1,10 +1,6 @@
-* { box-sizing: border-box; }
-
-body {
+* {
+    box-sizing: border-box;
     font-family: monospace;
-    color: #717171;
-    text-shadow: 1px 1px 1px #a5a5a5;
-    background: #f3f3f3;
 }
 
 .button {
@@ -13,13 +9,12 @@ body {
     border-radius: 2px;
     margin: 0;
     padding: 5px 20px;
-    font-size: 14px;
     text-decoration: none;
     text-transform: uppercase;
-    color: #717171;
     box-shadow: 1px 1px 4px #c1c1c1;
     text-shadow: 1px 1px 1px #a5a5a5;
     font-family: monospace;
+    font-weight: bold;
 }
 .button:hover {
     background: #e6e6e6;
@@ -53,14 +48,31 @@ input[type="text"] {
     border-radius: 2px;
     box-shadow: 1px 1px 1px #dedede;
 }
+.window .inner .title {
+    margin-bottom: 20px;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
 
 .inline-block {
     display: inline-block;
 }
 
 #home .button {
-    display: block;
-    margin-bottom: 20px;
+    display: inline-block;
+    width: 150px;
+    height: 150px;
+    border: 1px solid #aeaeae;
+    border-radius: 2px;
+    color: black;
+    font-weight: bold;
+    text-transform: uppercase;
+    text-decoration: none;
+    text-align: center;
+    margin: 10px;
+    line-height: 140px;
+    font-size: 20px;
 }
 
 #tile_builder canvas { position: absolute; }

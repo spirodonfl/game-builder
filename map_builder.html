@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <title>Map Builder</title>
+        <link rel="stylesheet" href="/css/general.css" />
+        <link rel="stylesheet" href="/css/HoverMouseTrap.css" />
+    </head>
+    <body>
+        <div class="window floating" id="choose">
+            <div class="inner">
+                <div class="title">Choose</div>
+                <button id="choose_new_map">New Map</button>
+                <button id="choose_load_map">Load Map</button>
+            </div>
+        </div>
+
+        <div class="window floating" id="new_map_form">
+            <div class="inner">
+                <div class="title">Size of Map</div>
+                <div class="form">
+                    <div class="input">
+                        <input type="text" id="new_map_name" placeholder="Name of new map" />
+                    </div>
+                    <div class="input">
+                        <input type="text" id="new_map_grid_x" placeholder="Grid size width" />
+                    </div>
+                    <div class="input">
+                        <input type="text" id="new_map_grid_y" placeholder="Grid size height" />
+                    </div>
+                    <button id="create_map">Create Map</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="window floating" id="load_map_form">
+            <div class="inner">
+                <div class="title">Pick A Map</div>
+                <div class="form">
+                    <div class="input">
+                        <input type="file" />
+                    </div>
+                    <button id="load_map">Load Map</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="window floating" id="builder">
+            <div class="inner">
+                <div class="form">
+                    <div class="title">Placements</div>
+                    <div class="input">
+                        <input type="checkbox" value="1" id="sticky_grid" /> Stick To Grid
+                    </div>
+                    <div class="input">
+                        <input type="checkbox" value="1" id="clear" /> Clear instead of place
+                    </div>
+                    <hr />
+                    <div class="title">Tile</div>
+                    <div class="input">
+                        <img src="" id="tile_preview_image" />
+                    </div>
+                    <div class="input">
+                        Select Tile<br/><input type="file" id="choose_tile" />
+                    </div>
+                    <hr />
+                    <div class="title">Layers</div>
+                    <button class="button" id="new_layer">New Layer</button>
+                    <ul id="list_layers"></ul>
+                    <hr />
+                    <div class="title">Actions</div>
+                    <button class="button" id="action_save">Save</button>
+                    <button class="button" id="action_start_over">Start Over</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="canvas_layers"></div>
+
+        <canvas id="canvas_hover" width="32" height="32"></canvas>
+        <div id="mouse_trap"></div>
+
+        <script type="text/javascript" src="/js/SF.js"></script>
+        <script type="text/javascript" src="/js/EventEmitter.js"></script>
+        <script type="text/javascript" src="/js/Keyboard.js"></script>
+        <script type="text/javascript" src="/js/HoverMouseTrap.js"></script>
+        <script type="text/javascript">
+            KEYBOARD.initialize();
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f4'], function () {
+                window.location = 'index.html';
+            });
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f5'], function () {
+                window.location.reload();
+            });
+        </script>
+        <script type="text/javascript" src="/js/map_builder.js"></script>
+    </body>
+</html>

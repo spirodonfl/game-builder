@@ -1,19 +1,29 @@
 interface ITileBuilder {
-    // mainWindow
-    // mainWindowHidden
-    // canvasTileset
-    // contextTileset
-    // canvasTmp
-    // contextTmp
-    // nameOfTile
-    // selectedImage
+    // Reference to the window that you can hide or show and where the form is to save the tile
+    mainWindow: HTMLElement;
+    // Instead of checking the "display" style attribute, we just keep a boolean to see if the window is showing or not
+    mainWindowHidden: boolean;
+    // The canvas that houses the tileset image
+    canvasTileset: HTMLCanvasElement;
+    // The context for the tileset canvas
+    contextTileset: CanvasRenderingContext2D;
+    // The canvas that houses the 32x32 selection that you make when you click somewhere on the big tileset canvas
+    canvasTmp: HTMLCanvasElement;
+    // The context for the canvas that houses the selected tile
+    contextTmp: CanvasRenderingContext2D;
+    // The input element that contains the name of the tile
+    nameOfTile: HTMLInputElement;
+    // The actual image element that is in the window to show you what you've selected as you save
+    selectedImage: HTMLImageElement;
 
-    // initialize
-    // setupCanvas
-    // setupListeners
+    initialize(): void;
+    // Loads the tileset image and then updates the width / height of appropriate elements to match the image
+    setupCanvas(): void;
+    // Listens to thinks like the hover mouse trap, save button, etc...
+    setupListeners(): void;
 }
 
-class cTILEBUILDER {
+class cTILEBUILDER implements ITileBuilder {
     private static _instance: cTILEBUILDER;
     public static get Instance() {
         return this._instance || (this._instance = new this());
@@ -22,9 +32,9 @@ class cTILEBUILDER {
     mainWindow: HTMLElement;
     mainWindowHidden: boolean;
     canvasTileset: HTMLCanvasElement;
-    contextTileset: CanvasRenderingContext2D|null;
+    contextTileset: CanvasRenderingContext2D;
     canvasTmp: HTMLCanvasElement;
-    contextTmp: CanvasRenderingContext2D|null;
+    contextTmp: CanvasRenderingContext2D;
     nameOfTile: HTMLInputElement;
     selectedImage: HTMLImageElement;
 
@@ -56,12 +66,18 @@ class cTILEBUILDER {
             let ct = SF.gei('canvas_tileset');
             if (ct instanceof HTMLElement) {
                 me.canvasTileset = <HTMLCanvasElement>ct;
-                me.contextTileset = me.canvasTileset.getContext('2d');
+                let ctx = me.canvasTileset.getContext('2d');
+                if (ctx instanceof CanvasRenderingContext2D) {
+                    me.contextTileset = ctx;
+                }
             }
             ct = SF.gei('canvas_tmp');
             if (ct instanceof HTMLElement) {
                 me.canvasTmp = <HTMLCanvasElement>ct;
-                me.contextTmp = me.canvasTmp.getContext('2d');
+                let ctx = me.canvasTmp.getContext('2d');
+                if (ctx instanceof CanvasRenderingContext2D) {
+                    me.contextTmp = ctx;
+                }
             }
 
             me.setupCanvas();
@@ -98,9 +114,13 @@ class cTILEBUILDER {
                 if (selectedImage instanceof HTMLElement) {
                     me.selectedImage = <HTMLImageElement>selectedImage;
                     saveButton.addEventListener('click', function () {
-                        let srcData = me.selectedImage.src.replace( /^data:image\/(png|jpg);base64,/, "" );
-                        require('fs').writeFileSync(me.nameOfTile.value + '.png', srcData, 'base64'); // TODO: Put this in a proper directory
-                        alert('saved'); // TODO: A proper alert
+                        if (me.nameOfTile.value === '') {
+                            alert('Please enter a name for this tile'); // TODO: Proper alert
+                        } else {
+                            let srcData = me.selectedImage.src.replace(/^data:image\/(png|jpg);base64,/, "");
+                            require('fs').writeFileSync(me.nameOfTile.value + '.png', srcData, 'base64'); // TODO: Put this in a proper directory
+                            alert('saved'); // TODO: A proper alert
+                        }
                     });
 
                     HOVERMOUSETRAP.ee.on('Mouse Up', function(x, y) {
