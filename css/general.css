@@ -55,6 +55,12 @@ input[type="text"] {
     text-transform: uppercase;
 }
 
+.window .inner .form {}
+.window .inner .input {
+    display: block;
+    margin-bottom: 20px;
+}
+
 .inline-block {
     display: inline-block;
 }
@@ -82,3 +88,5 @@ input[type="text"] {
     border: 2px solid purple;
     vertical-align: middle;
 }
+
+#map_builder #canvas_layers canvas { position: absolute; }

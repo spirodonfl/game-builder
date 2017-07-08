@@ -4,18 +4,18 @@
         <link rel="stylesheet" href="/css/general.css" />
         <link rel="stylesheet" href="/css/HoverMouseTrap.css" />
     </head>
-    <body>
+    <body id="map_builder">
         <div class="window floating" id="choose">
             <div class="inner">
                 <div class="title">Choose</div>
-                <button id="choose_new_map">New Map</button>
-                <button id="choose_load_map">Load Map</button>
+                <button class="button" id="choose_new_map">New Map</button>
+                <button class="button" id="choose_load_map">Load Map</button>
             </div>
         </div>
 
         <div class="window floating" id="new_map_form">
             <div class="inner">
-                <div class="title">Size of Map</div>
+                <div class="title">New Map Deets</div>
                 <div class="form">
                     <div class="input">
                         <input type="text" id="new_map_name" placeholder="Name of new map" />
@@ -26,7 +26,7 @@
                     <div class="input">
                         <input type="text" id="new_map_grid_y" placeholder="Grid size height" />
                     </div>
-                    <button id="create_map">Create Map</button>
+                    <button class="button" id="create_map">Create Map</button>
                 </div>
             </div>
         </div>
@@ -46,14 +46,6 @@
         <div class="window floating" id="builder">
             <div class="inner">
                 <div class="form">
-                    <div class="title">Placements</div>
-                    <div class="input">
-                        <input type="checkbox" value="1" id="sticky_grid" /> Stick To Grid
-                    </div>
-                    <div class="input">
-                        <input type="checkbox" value="1" id="clear" /> Clear instead of place
-                    </div>
-                    <hr />
                     <div class="title">Tile</div>
                     <div class="input">
                         <img src="" id="tile_preview_image" />
