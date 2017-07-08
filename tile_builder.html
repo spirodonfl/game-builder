@@ -7,21 +7,22 @@
         <link rel="stylesheet" href="/css/HoverMouseTrap.css" />
     </head>
     <body id="tile_builder">
-        <!--<div class="window floating" id="tile">-->
-            <!--<div class="inner">-->
-                <!--<div class="form">-->
-                    <!--<div id="tile_image"><img id="selected_image" src="" width="32" height="32" /></div>-->
-                    <!--<div id="tile_form">-->
-                        <!--<div class="input"><input type="text" placeholder="Name of Tile Here" id="name_of_tile" /></div>-->
-                        <!--<div class="input"><input type="checkbox" value="1" id="sticky_grid" />Stick To Grid</div>-->
-                        <!--<div class="button"><button id="save">Save</button></div>-->
-                    <!--</div>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
+        <div class="window floating" id="tile">
+            <div class="inner">
+                <div class="inline-block">
+                    <img id="selected_image" src="" width="32" height="32" />
+                </div>
+                <div class="inline-block">
+                    <input type="text" placeholder="Name this tile" id="name_of_tile" />
+                </div>
+                <div class="inline-block">
+                    <button class="button" id="save">Save</button>
+                </div>
+            </div>
+        </div>
 
-        <canvas id="tileset" width="100" height="100"></canvas>
-        <canvas id="tmp" width="32" height="32"></canvas>
+        <canvas id="canvas_tileset" width="100" height="100"></canvas>
+        <canvas id="canvas_tmp" width="32" height="32"></canvas>
 
         <canvas id="canvas_hover" width="32" height="32"></canvas>
         <div id="mouse_trap" style="width: 32px; height: 32px;"></div>
@@ -32,11 +33,13 @@
         <script type="text/javascript" src="/js/HoverMouseTrap.js"></script>
         <script type="text/javascript">
             KEYBOARD.initialize();
-            KEYBOARD.ee.on('KU:'+KEYBOARD.IDs['f5'], function () {
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f4'], function () {
+                window.location = 'index.html';
+            });
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f5'], function () {
                 window.location.reload();
             });
-            HOVERMOUSETRAP.drawMove = true;
-            HOVERMOUSETRAP.initialize();
         </script>
+        <script type="text/javascript" src="/js/tile_builder.js"></script>
     </body>
 </html>

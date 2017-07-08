@@ -31,7 +31,7 @@ class cKEYBOARD implements IKeyboard {
         this.altKey = false;
 
         this.IDs = {
-            'h': 72, 'i': 73, 'shift': 16, 'f5': 116
+            'h': 72, 'i': 73, 'shift': 16, 'f4': 115, 'f5': 116, 'f6': 117, 'f7': 118
         }
     }
 

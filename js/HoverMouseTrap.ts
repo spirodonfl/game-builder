@@ -26,7 +26,7 @@ class cHOVERMOUSETRAP implements IHoverMouseTrap {
     drawMove: boolean;
     divMouseTrap: HTMLDivElement;
     canvasHover: HTMLCanvasElement;
-    contextHover: CanvasRenderingContext2D | null;
+    contextHover: CanvasRenderingContext2D|null;
     clickDown: boolean;
 
     constructor() {
