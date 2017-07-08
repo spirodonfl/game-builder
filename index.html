@@ -3,11 +3,22 @@
     <head>
         <meta charset="UTF-8">
         <title>Game Builder</title>
-        <style type="text/css">
-            * { margin: 0px; padding: 0px; font-family: monospace; }
-        </style>
+        <link rel="stylesheet" href="/css/general.css" />
     </head>
-    <body>
+    <body id="home">
+        <h1>Game Builder</h1>
 
+        <a href="/tile_builder.html" class="button">Tiles</a>
+        <a href="#" class="button">Maps</a>
+        <a href="#" class="button">Characters</a>
+
+        <script type="text/javascript" src="/js/EventEmitter.js"></script>
+        <script type="text/javascript" src="/js/Keyboard.js"></script>
+        <script type="text/javascript">
+            KEYBOARD.initialize();
+            KEYBOARD.ee.on('KU:'+KEYBOARD.IDs['f5'], function () {
+                window.location.reload();
+            });
+        </script>
     </body>
 </html>
