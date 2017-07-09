@@ -77,7 +77,7 @@ class cHOVERMOUSETRAP implements IHoverMouseTrap {
         this.ee.emit('Mouse Down', coordinates[0], coordinates[1]);
     }
     handleMouseUp(e: MouseEvent) {
-        this.clickDown = true;
+        this.clickDown = false;
         let coordinates = this.calculateCoordinates(e.clientX, e.clientY);
         this.ee.emit('Mouse Up', coordinates[0], coordinates[1]);
     }

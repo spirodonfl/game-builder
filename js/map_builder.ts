@@ -101,6 +101,7 @@ class cMAPBUILDER implements IMapBuilder {
         this.mapLayerCanvases = {};
         this.mapLayerContexts = {};
         this.allLayersActive = false;
+        this.clearClick = false;
 
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
         for (let w = 0; w < this.windowIDs.length; ++w) {
@@ -211,13 +212,20 @@ class cMAPBUILDER implements IMapBuilder {
             }
         });
         HOVERMOUSETRAP.ee.on('Mouse Move', function(x, y) {
-            // if HOVERMOUSETRAP.clickDown
-            console.log(x, y);
-            me.mapLayerContexts['layer-0'].clearRect(x, y, 32, 32);
-            me.mapLayerContexts['layer-0'].drawImage(me.selectedTileImage, x, y);
+            if (me.selectedTileImage.src !== '' && HOVERMOUSETRAP.clickDown) {
+                me.mapLayerContexts['layer-0'].clearRect(x, y, 32, 32);
+                if (!me.clearClick) {
+                    me.mapLayerContexts['layer-0'].drawImage(me.selectedTileImage, x, y);
+                }
+            }
         });
         HOVERMOUSETRAP.ee.on('Mouse Up', function(x, y) {
-            console.log(x, y);
+            if (me.selectedTileImage.src !== '') {
+                me.mapLayerContexts['layer-0'].clearRect(x, y, 32, 32);
+                if (!me.clearClick) {
+                    me.mapLayerContexts['layer-0'].drawImage(me.selectedTileImage, x, y);
+                }
+            }
         });
 
         // Listen to buttons and inputs
