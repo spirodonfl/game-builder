@@ -45,6 +45,9 @@ interface IMapBuilder {
     activeLayer: number;
     // Indicates whether clicking should actually clear the selected area instead of a place a tile there
     clearClick: boolean;
+    // If this is false, only the active layer is seen in full strength. The other layers are muted so they're less visible. Makes it easier to distinguish layers.
+    allLayersActive: boolean;
+    selectedTileImage: HTMLImageElement;
 
     // Grabs all the windows, buttons, etc..., adds event listeners
     initialize(): void;
@@ -73,6 +76,8 @@ class cMAPBUILDER implements IMapBuilder {
     mapLayerCanvases: IHashOfMapLayerCanvases;
     mapLayerContexts: IHashOfMapLayerContexts;
     clearClick: boolean;
+    allLayersActive: boolean;
+    selectedTileImage: HTMLImageElement;
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -95,6 +100,7 @@ class cMAPBUILDER implements IMapBuilder {
         this.activeLayer = 0;
         this.mapLayerCanvases = {};
         this.mapLayerContexts = {};
+        this.allLayersActive = false;
 
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
         for (let w = 0; w < this.windowIDs.length; ++w) {
@@ -130,6 +136,11 @@ class cMAPBUILDER implements IMapBuilder {
             if (elementDiv instanceof HTMLElement) {
                 this.divs[id] = <HTMLDivElement>elementDiv;
             }
+        }
+
+        let ti = SF.gei('tile_preview_image');
+        if (ti instanceof HTMLElement) {
+            this.selectedTileImage = <HTMLImageElement>ti;
         }
 
         this.buttons['choose_new_map'].addEventListener('click', this.choseNewMap.bind(this));
@@ -191,15 +202,22 @@ class cMAPBUILDER implements IMapBuilder {
         this.buttons['new_layer'].addEventListener('click', this.addNewLayer.bind(this));
         let me = this;
         this.inputs['choose_tile'].addEventListener('change', function (e) {
-            // TODO: THIS
-            console.log(e);
             if (e.target instanceof HTMLInputElement) {
                 if (e.target.files && e.target.files.length > 0) {
                     if (e.target.files[0] && e.target.files[0].path) {
-                        let a = e.target.files[0].path;console.log(a);
+                        me.selectedTileImage.src = e.target.files[0].path;
                     }
                 }
             }
+        });
+        HOVERMOUSETRAP.ee.on('Mouse Move', function(x, y) {
+            // if HOVERMOUSETRAP.clickDown
+            console.log(x, y);
+            me.mapLayerContexts['layer-0'].clearRect(x, y, 32, 32);
+            me.mapLayerContexts['layer-0'].drawImage(me.selectedTileImage, x, y);
+        });
+        HOVERMOUSETRAP.ee.on('Mouse Up', function(x, y) {
+            console.log(x, y);
         });
 
         // Listen to buttons and inputs
@@ -251,19 +269,32 @@ class cMAPBUILDER implements IMapBuilder {
                 cl.style.zIndex = layerID.toString();
                 cl.setAttribute('data-layer', layerID.toString());
                 this.divs['canvas_layers'].appendChild(cl);
-                this.mapLayerCanvases[layerID.toString()] = cl;
+                this.mapLayerCanvases['layer-' + layerID.toString()] = cl;
                 let ctx = cl.getContext('2d');
                 if (ctx) {
-                    this.mapLayerContexts[layerID.toString()] = ctx;
+                    this.mapLayerContexts['layer-' + layerID.toString()] = ctx;
                 }
             }
             this.divs['list_layers'].appendChild(listLayer);
         }
         ++this.mapDetails.layers;
     }
-    deleteLayer() {}
-    switchToPreviousLayer() {}
-    switchToNextLayer() {}
+    deleteLayer() {
+        // TODO: Make sure to check if you've just deleted the active layer or not
+        --this.mapDetails.layers;
+    }
+    switchToPreviousLayer() {
+        // TODO: Remove #active_layer id
+        if (this.activeLayer > 0) {
+            --this.activeLayer;
+        }
+        // TODO: Add #active_layer id
+    }
+    switchToNextLayer() {
+        if (this.activeLayer < this.mapDetails.layers) {
+            ++this.activeLayer;
+        }
+    }
 }
 let MAPBUILDER = cMAPBUILDER.Instance;
 MAPBUILDER.initialize();

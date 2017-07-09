@@ -69,7 +69,7 @@ class cHOVERMOUSETRAP implements IHoverMouseTrap {
             this.contextHover.fillStyle = 'rgba(0, 0, 0, 0.4)';
             this.contextHover.fillRect(coordinates[0], coordinates[1], 32, 32);
         }
-        this.ee.emit('Move', coordinates[0], coordinates[1]);
+        this.ee.emit('Mouse Move', coordinates[0], coordinates[1]);
     }
     handleMouseDown(e: MouseEvent) {
         this.clickDown = true;

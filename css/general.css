@@ -89,4 +89,8 @@ input[type="text"] {
     vertical-align: middle;
 }
 
-#map_builder #canvas_layers canvas { position: absolute; }
+#map_builder #canvas_layers canvas {
+    position: absolute;
+    opacity: 0.2;
+}
+#map_builder #canvas_layers canvas#active_layer { opacity: 1; }
