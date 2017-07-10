@@ -133,3 +133,10 @@ input[type="text"] {
     opacity: 0.2;
 }
 #map_builder #canvas_layers canvas#c_active_layer { opacity: 1; }
+
+#character_builder #cf_yw { display: none; }
+#character_builder .cf-row {
+    border-bottom: 1px solid black;
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}

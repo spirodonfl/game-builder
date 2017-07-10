@@ -6,6 +6,72 @@
         <link rel="stylesheet" href="/css/HoverMouseTrap.css" />
     </head>
     <body id="character_builder">
+        <div class="window" id="character">
+            <div class="inner">
+                <canvas id="canvas_character" width="96" height="128"></canvas>
+                <div class="form" id="character_form">
+                    <div class="input"><input type="text" id="character_name" placeholder="Name of Character" /></div>
+                    <div class="input">
+                        <select id="gender">
+                            <option value="ym">Male</option>
+                            <option value="yw">Female</option>
+                        </select>
+                    </div>
+                    <button class="button" id="save_character">Save Character</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="character_image_container">
+            <!--<img id="cg_bg" width="96" height="128"></img>-->
+            <img id="cg_option_b" width="96" height="128"></img>
+            <img id="cg_acce1_b" width="96" height="128"></img>
+            <img id="cg_hairop_b" width="96" height="128"></img>
+            <img id="cg_hair_b" width="96" height="128"></img>
+            <img id="cg_mante_b" width="96" height="128"></img>
+            <img id="cg_acce2_b" width="96" height="128"></img>
+            <img id="cg_body" width="96" height="128"></img>
+            <img id="cg_hair_f" width="96" height="128"></img>
+            <img id="cg_acce2_m" width="96" height="128"></img>
+            <img id="cg_mante_f" width="96" height="128"></img>
+            <img id="cg_acce1_f" width="96" height="128"></img>
+            <img id="cg_hair_t" width="96" height="128"></img>
+            <img id="cg_acce2_f" width="96" height="128"></img>
+            <img id="cg_hairop_f" width="96" height="128"></img>
+            <img id="cg_acce1_t" width="96" height="128"></img>
+            <img id="cg_option_f" width="96" height="128"></img>
+
+            <!--<img id="cg_hair_m" width="96" height="128"></img>-->
+            <!--<img id="cg_hairop_t" width="96" height="128"></img>-->
+            <!--<img id="cg_hairop_m" width="96" height="128"></img>-->
+            <!--<img id="cg_mante_t" width="96" height="128"></img>-->
+            <!--<img id="cg_mante_m" width="96" height="128"></img>-->
+            <!--<img id="cg_option_t" width="96" height="128"></img>-->
+            <!--<img id="cg_option_m" width="96" height="128"></img>-->
+            <!--<img id="cg_acce1_m" width="96" height="128"></img>-->
+            <!--<img id="cg_acce2_t" width="96" height="128"></img>-->
+        </div>
+
+        <div id="character_features">
+            <div id="cf_ym">
+                <div id="cf_ym_acce1" class="cf-row"></div>
+                <div id="cf_ym_acce2" class="cf-row"></div>
+                <div id="cf_ym_body" class="cf-row"></div>
+                <div id="cf_ym_hair" class="cf-row"></div>
+                <div id="cf_ym_hairop" class="cf-row"></div>
+                <div id="cf_ym_mante" class="cf-row"></div>
+                <div id="cf_ym_option" class="cf-row"></div>
+            </div>
+            <div id="cf_yw">
+                <div id="cf_yw_acce1" class="cf-row"></div>
+                <div id="cf_yw_acce2" class="cf-row"></div>
+                <div id="cf_yw_body" class="cf-row"></div>
+                <div id="cf_yw_hair" class="cf-row"></div>
+                <div id="cf_yw_hairop" class="cf-row"></div>
+                <div id="cf_yw_mante" class="cf-row"></div>
+                <div id="cf_yw_option" class="cf-row"></div>
+            </div>
+        </div>
 
         <script type="text/javascript" src="/js/SF.js"></script>
         <script type="text/javascript" src="/js/EventEmitter.js"></script>
