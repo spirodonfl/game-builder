@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Game Builder: Tiles</title>
+        <link rel="stylesheet" href="/css/general.css" />
+        <link rel="stylesheet" href="/css/HoverMouseTrap.css" />
+    </head>
+    <body id="character_builder">
+
+        <script type="text/javascript" src="/js/SF.js"></script>
+        <script type="text/javascript" src="/js/EventEmitter.js"></script>
+        <script type="text/javascript" src="/js/Keyboard.js"></script>
+        <script type="text/javascript" src="/js/HoverMouseTrap.js"></script>
+        <script type="text/javascript">
+            KEYBOARD.initialize();
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f4'], function () {
+                window.location = 'index.html';
+            });
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f5'], function () {
+                window.location.reload();
+            });
+        </script>
+        <script type="text/javascript" src="/js/character_builder.js"></script>
+    </body>
+</html>
