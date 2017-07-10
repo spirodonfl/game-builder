@@ -55,6 +55,33 @@ input[type="text"] {
     text-transform: uppercase;
 }
 
+#alert_overlay {
+    display: none;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.2);
+}
+#window_alert {
+    display: none;
+    left: 0;
+    top: 0;
+    z-index: 1001;
+    margin: 20px;
+}
+#window_alert_title {
+    color: red;
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+#window_alert_content {
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
 .window .inner .form {}
 .window .inner .input {
     display: block;
@@ -89,8 +116,20 @@ input[type="text"] {
     vertical-align: middle;
 }
 
+#map_builder #new_layer { margin-bottom: 20px; }
+#map_builder #list_layers {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+    margin-bottom: 10px;
+}
+#map_builder #list_layers .button { margin-left: 10px; }
+#map_builder #list_layers .button#d_active_layer {
+    color: red;
+    border: 1px solid red;
+}
 #map_builder #canvas_layers canvas {
     position: absolute;
     opacity: 0.2;
 }
-#map_builder #canvas_layers canvas#active_layer { opacity: 1; }
+#map_builder #canvas_layers canvas#c_active_layer { opacity: 1; }

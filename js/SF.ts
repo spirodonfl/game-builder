@@ -18,6 +18,8 @@ interface ISF {
     doc: HTMLDocument;
     gei(id: string): false|HTMLElement;
     ce(type: string): false|HTMLElement;
+    qs(type: string): false|HTMLElement;
+    qsa(type: string): any;
 }
 
 class cSF implements ISF {
@@ -34,6 +36,20 @@ class cSF implements ISF {
         let element = this.doc.getElementById(id);
         if (element instanceof HTMLElement) {
             return element;
+        }
+        return false;
+    }
+    qs(querySelector: string) {
+        let element = this.doc.querySelector(querySelector);
+        if (element instanceof HTMLElement) {
+            return element;
+        }
+        return false;
+    }
+    qsa(querySelector: string) {
+        let elements = this.doc.querySelectorAll(querySelector);
+        if (elements) {
+            return elements;
         }
         return false;
     }

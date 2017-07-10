@@ -1,13 +1,3 @@
-/**
- * Clear instead of place: Make a key binding and show a red hover mousetrap instead of the regular
- * Layers
- * == Add a layer (make a key binding) +(?)
- * == Remove current layer -(?)
- * == Mute all layers except active layers (opacity does work!)
- * == Switch layers (shift + and - ?)
- * == You probably still want a layer window though
- */
-
 interface IHashOfHtmlElements {
     [key: string]: HTMLElement;
 }
@@ -53,13 +43,16 @@ interface IMapBuilder {
     initialize(): void;
     hideAllWindows(): void;
     createNewMap(): void;
+    saveMap(): void;
     loadMap(): void;
     addNewLayer(): void;
-    deleteLayer(): void;
+    deleteLayer(layerID: number): void;
     switchToPreviousLayer(): void;
     switchToNextLayer(): void;
+    setActiveLayer(layerID: number): void;
 }
 
+// TODO: Layers need to be handled smarter. You can't just store an array of length. You also need the individual IDs because you might have skipped IDs if you delete layers.
 class cMAPBUILDER implements IMapBuilder {
     private static _instance: cMAPBUILDER;
     public static get Instance() {
@@ -172,6 +165,19 @@ class cMAPBUILDER implements IMapBuilder {
         this.hideAllWindows();
         this.windows['new_map_form'].style.display = 'block';
     }
+    saveMap() {
+        // TODO: Be smarter about how you cleanup. The only real kicker (so far) is deleting layers that have been deleted.
+        // TODO: Delete map data JSON and associated layers
+        for (let layerName in this.mapLayerCanvases) {
+            let layerCanvas = this.mapLayerCanvases[layerName];
+            let srcData = layerCanvas.toDataURL();
+            srcData = srcData.replace(/^data:image\/(png|jpg);base64,/, "")
+            require('fs').writeFileSync(this.mapDetails.name + '-' + layerName + '.png', srcData, 'base64'); // TODO: Put this in a proper folder!
+        }
+        let name = this.mapDetails.name;
+        name = name.replace(/\s+/g, '-').toLowerCase();
+        require('fs').writeFileSync(name + '.json', JSON.stringify(this.mapDetails), 'utf8');
+    }
     createNewMap() {
         if (this.inputs['new_map_name'].value === '') {
             alert('Please enter a name for the new map'); // TODO: Proper alert
@@ -191,8 +197,9 @@ class cMAPBUILDER implements IMapBuilder {
         if (newMap) {
             // Create the first layer and inject into DOM
             this.addNewLayer();
+            this.setActiveLayer(0);
         } else {
-            // Load layers and inject into DOM one by one (or async?)
+            // TODO: Load layers and inject into DOM one by one (or async?)
         }
         // Resize mousetrap && existing layers to map details
         HOVERMOUSETRAP.canvasHover.width = this.mapDetails.width * 32;
@@ -213,23 +220,29 @@ class cMAPBUILDER implements IMapBuilder {
         });
         HOVERMOUSETRAP.ee.on('Mouse Move', function(x, y) {
             if (me.selectedTileImage.src !== '' && HOVERMOUSETRAP.clickDown) {
-                me.mapLayerContexts['layer-0'].clearRect(x, y, 32, 32);
+                me.mapLayerContexts['layer-' + me.activeLayer].clearRect(x, y, 32, 32);
                 if (!me.clearClick) {
-                    me.mapLayerContexts['layer-0'].drawImage(me.selectedTileImage, x, y);
+                    me.mapLayerContexts['layer-' + me.activeLayer].drawImage(me.selectedTileImage, x, y);
                 }
             }
         });
         HOVERMOUSETRAP.ee.on('Mouse Up', function(x, y) {
             if (me.selectedTileImage.src !== '') {
-                me.mapLayerContexts['layer-0'].clearRect(x, y, 32, 32);
+                me.mapLayerContexts['layer-' + me.activeLayer].clearRect(x, y, 32, 32);
                 if (!me.clearClick) {
-                    me.mapLayerContexts['layer-0'].drawImage(me.selectedTileImage, x, y);
+                    me.mapLayerContexts['layer-' + me.activeLayer].drawImage(me.selectedTileImage, x, y);
                 }
             }
         });
 
+        this.buttons['action_save'].addEventListener('click', this.saveMap.bind(this));
+        this.buttons['action_start_over'].addEventListener('click', this.startOver.bind(this));
+
         // Listen to buttons and inputs
         this.windows['builder'].style.display = 'block';
+    }
+    startOver() {
+        window.location.reload();
     }
     hideAllWindows() {
         for (let w = 0; w < this.windowIDs.length; ++w) {
@@ -251,6 +264,7 @@ class cMAPBUILDER implements IMapBuilder {
         let layerID = this.mapDetails.layers;
         let listLayer = SF.ce('li');
         if (listLayer) {
+            listLayer.setAttribute('data-layer', '' + layerID);
             listLayer.innerHTML = 'Layer ' + layerID;
             let delBtn = SF.ce('button');
             if (delBtn) {
@@ -258,7 +272,7 @@ class cMAPBUILDER implements IMapBuilder {
                 delBtn.setAttribute('data-layer', layerID.toString());
                 delBtn.innerHTML = 'x';
                 listLayer.appendChild(delBtn);
-                // delBtn.addEventListener('click', function (e) {}); // TODO: this
+                delBtn.addEventListener('click', this.deleteLayerButtonClicked.bind(this));
             }
             let actBtn = SF.ce('button');
             if (actBtn) {
@@ -266,7 +280,7 @@ class cMAPBUILDER implements IMapBuilder {
                 actBtn.setAttribute('data-layer', layerID.toString());
                 actBtn.innerHTML = 'O';
                 listLayer.appendChild(actBtn);
-                // actBtn.addEventListener('click', function (e) {}); // TODO: this
+                actBtn.addEventListener('click', this.activeLayerButtonClicked.bind(this));
             }
             let canvasLayer = SF.ce('canvas');
             if (canvasLayer) {
@@ -287,20 +301,119 @@ class cMAPBUILDER implements IMapBuilder {
         }
         ++this.mapDetails.layers;
     }
-    deleteLayer() {
-        // TODO: Make sure to check if you've just deleted the active layer or not
+    deleteLayerButtonClicked(e: Event) {
+        if (e.target && e.target instanceof HTMLElement) {
+            let layerID = e.target.getAttribute('data-layer');
+            if (layerID) {
+                let numericalID = parseInt(layerID);
+                this.deleteLayer(numericalID);
+            }
+        }
+    }
+    activeLayerButtonClicked(e: Event) {
+        if (e.target && e.target instanceof HTMLElement) {
+            let layerID = e.target.getAttribute('data-layer');
+            if (layerID) {
+                let numericalID = parseInt(layerID);
+                this.setActiveLayer(numericalID);
+            }
+        }
+    }
+    deleteLayer(layerID: number) {
+        // TODO: Make this a keyboard shortcut too?
+        if (layerID === this.activeLayer && layerID > 0) {
+            this.switchToPreviousLayer();
+        } else {
+            this.switchToNextLayer();
+        }
+        this.mapLayerCanvases['layer-' + layerID].remove();
+        delete(this.mapLayerCanvases['layer-' + layerID]);
+        delete(this.mapLayerContexts['layer-' + layerID]);
+
+        let toDelete = SF.qsa('[data-layer="' + layerID + '"]');
+        if (toDelete) {
+            for (let del in toDelete) {
+                if (toDelete[del] instanceof HTMLElement) {
+                    toDelete[del].remove();
+                    // TODO: Remove the event listeners?
+                }
+            }
+        }
         --this.mapDetails.layers;
     }
     switchToPreviousLayer() {
-        // TODO: Remove #active_layer id
+        // TODO: Make this a keyboard shortcut too?
+        let activeLayerElement = SF.gei('active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        activeLayerElement = SF.gei('c_active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        activeLayerElement = SF.gei('d_active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
         if (this.activeLayer > 0) {
             --this.activeLayer;
         }
-        // TODO: Add #active_layer id
+        let layerElement = SF.qs('.active-layer[data-layer="' + this.activeLayer + '"]');
+        if (layerElement instanceof HTMLElement) {
+            layerElement.id = 'd_active_layer';
+        }
+        layerElement = SF.qs('canvas[data-layer="' + this.activeLayer + '"]');
+        if (layerElement instanceof HTMLElement) {
+            layerElement.id = 'c_active_layer';
+        }
     }
     switchToNextLayer() {
+        // TODO: Make this a keyboard shortcut too?
+        let activeLayerElement = SF.gei('active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        activeLayerElement = SF.gei('c_active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        activeLayerElement = SF.gei('d_active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
         if (this.activeLayer < this.mapDetails.layers) {
             ++this.activeLayer;
+        }
+        let layerElement = SF.qs('.active-layer[data-layer="' + this.activeLayer + '"]');
+        if (layerElement instanceof HTMLElement) {
+            layerElement.id = 'd_active_layer';
+        }
+        layerElement = SF.qs('canvas[data-layer="' + this.activeLayer + '"]');
+        if (layerElement instanceof HTMLElement) {
+            layerElement.id = 'c_active_layer';
+        }
+    }
+    setActiveLayer(layerID: number) {
+        let activeLayerElement = SF.gei('active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        activeLayerElement = SF.gei('c_active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        activeLayerElement = SF.gei('d_active_layer');
+        if (activeLayerElement instanceof HTMLElement) {
+            activeLayerElement.id = '';
+        }
+        this.activeLayer = layerID;
+        let layerElement = SF.qs('.active-layer[data-layer="' + this.activeLayer + '"]');
+        if (layerElement instanceof HTMLElement) {
+            layerElement.id = 'd_active_layer';
+        }
+        layerElement = SF.qs('canvas[data-layer="' + this.activeLayer + '"]');
+        if (layerElement instanceof HTMLElement) {
+            layerElement.id = 'c_active_layer';
         }
     }
 }
