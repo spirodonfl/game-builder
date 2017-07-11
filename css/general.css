@@ -134,6 +134,17 @@ input[type="text"] {
 }
 #map_builder #canvas_layers canvas#c_active_layer { opacity: 1; }
 
+#character_builder #character_image_container { display: none; }
+#character_builder #character_image_container img { border: 2px solid pink; }
+#character_builder #character_features {
+    overflow-y: scroll;
+    height: 320px;
+}
+#character_builder #character_features img {
+    border: 2px solid black;
+    margin: 5px;
+}
+#character_builder #character_features img:hover { cursor: pointer; }
 #character_builder #cf_yw { display: none; }
 #character_builder .cf-row {
     border-bottom: 1px solid black;
