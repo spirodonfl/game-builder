@@ -168,15 +168,16 @@ class cMAPBUILDER implements IMapBuilder {
     saveMap() {
         // TODO: Be smarter about how you cleanup. The only real kicker (so far) is deleting layers that have been deleted.
         // TODO: Delete map data JSON and associated layers
+        let name = this.mapDetails.name;
+        name = name.replace(/\s+/g, '-').toLowerCase();
         for (let layerName in this.mapLayerCanvases) {
             let layerCanvas = this.mapLayerCanvases[layerName];
             let srcData = layerCanvas.toDataURL();
             srcData = srcData.replace(/^data:image\/(png|jpg);base64,/, "")
-            require('fs').writeFileSync(this.mapDetails.name + '-' + layerName + '.png', srcData, 'base64'); // TODO: Put this in a proper folder!
+            require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64'); // TODO: Put this in a proper folder!
         }
-        let name = this.mapDetails.name;
-        name = name.replace(/\s+/g, '-').toLowerCase();
-        require('fs').writeFileSync(name + '.json', JSON.stringify(this.mapDetails), 'utf8');
+        require('fs').writeFileSync('assets/maps/' + name + '.json', JSON.stringify(this.mapDetails), 'utf8');
+        // TODO: 'assets/maps.default.json' and 'assets/maps.json'
     }
     createNewMap() {
         if (this.inputs['new_map_name'].value === '') {

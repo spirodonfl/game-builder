@@ -118,7 +118,10 @@ class cTILEBUILDER implements ITileBuilder {
                             alert('Please enter a name for this tile'); // TODO: Proper alert
                         } else {
                             let srcData = me.selectedImage.src.replace(/^data:image\/(png|jpg);base64,/, "");
-                            require('fs').writeFileSync(me.nameOfTile.value + '.png', srcData, 'base64'); // TODO: Put this in a proper directory
+                            let name = me.nameOfTile.value;
+                            name = name.replace(/\s+/g, '-').toLowerCase();
+                            require('fs').writeFileSync('assets/tiles/' + name + '.png', srcData, 'base64'); // TODO: Put this in a proper directory
+                            // TODO: tile.json
                             alert('saved'); // TODO: A proper alert
                         }
                     });
