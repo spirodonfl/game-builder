@@ -94,7 +94,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
         this.ym = {};
         this.yw = {};
         this.iImages = [];
-        this.dbCharacters = JSON.parse(require('fs').readFileSync('assets/characters.json', {encoding: 'utf8'}));
+        this.dbCharacters = JSON.parse(require('fs').readFileSync('assets/characters.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
 
         this.windows = {};
         this.divs = {};

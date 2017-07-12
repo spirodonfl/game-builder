@@ -1,3 +1,6 @@
+interface basicHash {
+    [key: string]: any;
+}
 interface ITileBuilder {
     // Reference to the window that you can hide or show and where the form is to save the tile
     mainWindow: HTMLElement;
@@ -37,9 +40,11 @@ class cTILEBUILDER implements ITileBuilder {
     contextTmp: CanvasRenderingContext2D;
     nameOfTile: HTMLInputElement;
     selectedImage: HTMLImageElement;
+    dbTiles: basicHash;
 
     initialize() {
         let me = this;
+        this.dbTiles = JSON.parse(require('fs').readFileSync('assets/tiles.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
         let mwel = SF.gei('tile');
         if (mwel instanceof HTMLElement) {
             me.mainWindow = mwel;
@@ -120,8 +125,11 @@ class cTILEBUILDER implements ITileBuilder {
                             let srcData = me.selectedImage.src.replace(/^data:image\/(png|jpg);base64,/, "");
                             let name = me.nameOfTile.value;
                             name = name.replace(/\s+/g, '-').toLowerCase();
-                            require('fs').writeFileSync('assets/tiles/' + name + '.png', srcData, 'base64'); // TODO: Put this in a proper directory
-                            // TODO: tile.json
+                            require('fs').writeFileSync('assets/tiles/' + name + '.png', srcData, 'base64');
+                            if (!me.dbTiles[name]) {
+                                me.dbTiles[name] = "";
+                                require('fs').writeFileSync('assets/tiles.json', JSON.stringify(me.dbTiles), {encoding: 'utf8'});
+                            }
                             alert('saved'); // TODO: A proper alert
                         }
                     });
