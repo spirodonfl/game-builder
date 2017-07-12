@@ -60,7 +60,8 @@ nwjs
 !/typings/*
 
 assets/*/*.json
-
+assets/*.json
 !assets/*/*.default.json
+!assets/*.default.json
 
 assets/*/*.png
