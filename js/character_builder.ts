@@ -179,6 +179,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
 
         this.preloadImages('ym', this.ym);
         this.preloadImages('yw', this.yw);
+        // TODO: Can we take out the inline checkImagesLoaded function and make it its own thing? That way we can also use a "this" reference too.
         let totalImages = this.iImages.length;
         let imagesLoaded = 0;
         function checkImagesLoaded() {
@@ -190,9 +191,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
                     let type = img.getAttribute('data-type');
                     let parent = CHARACTERBUILDER.divs['cf_' + gender + '_' + type];
                     img.addEventListener('click', CHARACTERBUILDER.handleImageClick.bind(CHARACTERBUILDER));
-                    if (parent instanceof HTMLElement) {
-                        parent.appendChild(img);
-                    }
+                    parent.appendChild(img);
                 }
             }
         }
@@ -202,6 +201,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             img.src = img.getAttribute('data-src');
         }
 
+        // TODO: Can we use a method instead of an inline function? That way we can also use "this" references.
         this.selects['gender'].addEventListener('change', function(e) {
             if (e.target && e.target instanceof HTMLSelectElement) {
                 if (e.target.value === 'ym') {
@@ -214,6 +214,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             }
         });
 
+        // TODO: Can we use a method instead of an inline function? That way we can also use "this" references.
         this.buttons['save_character'].addEventListener('click', function () {
             let name = CHARACTERBUILDER.inputs['character_name'].value;
             if (name === '') {
@@ -260,6 +261,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             } else {
                 this.images['cg_body'].src = 'chargen/image/' + gender + '/body/none.png';
             }
+            // TODO: For all of these onerror and onload events, can we use event listeners instead and then also use methods instead of inlines functions so we can also use "this" references?
             this.images['cg_body'].onerror = function() {
                 CHARACTERBUILDER.images['cg_body'].setAttribute('data-include', '0');
                 CHARACTERBUILDER.generateCharacter();
@@ -279,6 +281,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
                 CHARACTERBUILDER.generateCharacter();
             }
             if (sides[0]) {
+                // TODO: Maybe we can setup some common path prefix variables in a more global level to make this easier to read?
                 frontEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'front_' + gender + '/' + index + '_' + color + '.png';
             } else {
                 frontEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'front_' + gender + '/none.png';
@@ -332,90 +335,29 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
     }
     generateCharacter() {
         this.contexts['canvas_character'].clearRect(0, 0, this.canvases['canvas_character'].width, this.canvases['canvas_character'].height);
-        let images = document.querySelectorAll('#character_image_container img');
-        for (let m in images) {
-            let img = images[m];
-            if (img instanceof HTMLElement) {
-                let charImg = <HTMLImageElement>img;
-                if (charImg.id === 'cg_body') {
-                    this.contexts['canvas_character'].drawImage(charImg, 0, 0);
-                } else {
-                    let dInclude = charImg.getAttribute('data-include');
-                    if (dInclude !== '' && dInclude !== null) {
-                        let include = parseInt(dInclude);
-                        if (include) {
-                            this.contexts['canvas_character'].drawImage(charImg, 0, 0);
+        let images = SF.qsa('#character_image_container img');
+        if (images) {
+            for (let m in images) {
+                let img = images[m];
+                if (img instanceof HTMLElement) {
+                    let charImg = <HTMLImageElement>img;
+                    if (charImg.id === 'cg_body') {
+                        this.contexts['canvas_character'].drawImage(charImg, 0, 0);
+                    } else {
+                        let dInclude = charImg.getAttribute('data-include');
+                        if (dInclude !== '' && dInclude !== null) {
+                            let include = parseInt(dInclude);
+                            if (include) {
+                                this.contexts['canvas_character'].drawImage(charImg, 0, 0);
+                            }
                         }
                     }
                 }
             }
         }
     }
-    // dynamicChargen(gender: string) {
-    //     for (let iType in CHARACTERBUILDER.iTypes) {
-    //         let type = CHARACTERBUILDER.iTypes[iType];
-    //         let typePath = 'chargen/icon/' + gender + '/' + type + '/';
-    //         let files = require('fs').readdirSync(typePath);
-    //         if (!this.xy[type]) {
-    //             this.xy[type] = {};
-    //         }
-    //         if (type !== 'body') {
-    //             for (let x = 0; x < files.length; ++x) {
-    //                 let fileName = files[x];
-    //                 if (fileName !== 'none.gif') {
-    //                     let fileNameSplit = fileName.split('_');
-    //                     let id = fileNameSplit[0];
-    //                     let color = fileNameSplit[1];
-    //                     color = color.replace(/\.gif/, '');
-    //
-    //                     if (!this.xy[type][id]) {
-    //                         this.xy[type][id] = {};
-    //                     }
-    //                     if (!this.xy[type][id][color]) {
-    //                         this.xy[type][id][color] = {};
-    //                     }
-    //
-    //                     let has:{[key: string]: boolean} = {'front': false, 'back': false, 'middle': false, 'top': false};
-    //                     let sides = CHARACTERBUILDER.iSides[type];
-    //                     for (let s = 0; s < sides.length; ++s) {
-    //                         let side = sides[s];
-    //                         let sidesPath = 'chargen/image/' + gender + '/' + type + '/' + side + '_' + gender + '/';
-    //                         sidesPath = sidesPath + fileName.replace(/\.gif/, '.png');
-    //                         if (require('fs').existsSync(sidesPath)) {
-    //                             has[side] = true;
-    //                         }
-    //                     }
-    //
-    //                     this.xy[type][id][color] = has;
-    //                 } else {
-    //                     if (!this.xy[type]['none']) {
-    //                         this.xy[type]['none'] = 1;
-    //                     }
-    //                 }
-    //             }
-    //         } else {
-    //             for (let x = 0; x < files.length; ++x) {
-    //                 let fileName = files[x];
-    //                 if (fileName !== 'none.gif') {
-    //                     let fileNameSplit = fileName.split('_');
-    //                     let id = fileNameSplit[0];
-    //                     let color = fileNameSplit[1];
-    //                     color = color.replace(/\.gif/, '');
-    //
-    //                     if (!this.xy[type][id]) {
-    //                         this.xy[type][id] = [];
-    //                     }
-    //                     this.xy[type][id].push(color);
-    //                 } else {
-    //                     if (!this.xy[type]['none']) {
-    //                         this.xy[type]['none'] = 1;
-    //                     }
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
-    preloadImages(gender: string, from: basicHash) {
+    preloadImages(gender: string, from: any) {
+        // TODO: Can these functions be methods instead of inline functions?
         function generateImageElement(gender: any, type: any, index: any, color: any, colors: any) {
             let imgElement = SF.ce('img');
             if (imgElement instanceof HTMLElement) {
