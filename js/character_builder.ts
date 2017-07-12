@@ -1,10 +1,51 @@
+// TODO: Put the below html element interfaces into a common file
+interface IHashOfHtmlElements {
+    [key: string]: HTMLElement;
+}
+interface IHashOfHtmlDivElements {
+    [key: string]: HTMLDivElement;
+}
+interface IHashOfHtmlInputElements {
+    [key: string]: HTMLInputElement;
+}
+interface IHashOfHtmlSelectElements {
+    [key: string]: HTMLSelectElement;
+}
+interface IHashOfHtmlButtonElements {
+    [key: string]: HTMLButtonElement;
+}
+interface IHashOfCanvasElements {
+    [key: string]: HTMLCanvasElement;
+}
+interface IHashOfContexts {
+    [key: string]: CanvasRenderingContext2D;
+}
+interface IHashOfHtmlImageElements {
+    [key: string]: HTMLImageElement;
+}
 interface IHashOfSides {
     [key: string]: Array<string>;
 }
-interface Ixy {
-    [name: string]: {[key: string]: {[key: string]: {[key: string]: any}}};
+interface basicHash {
+    [key: string]: any;
 }
-interface ICharacterBuilder {}
+interface ICharacterBuilder {
+    ee: EventEmitter;
+    iColors: Array<string>;
+    iTypes: Array<string>;
+    iSides: IHashOfSides;
+    windows: IHashOfHtmlDivElements;
+    divs: IHashOfHtmlDivElements;
+    buttons: IHashOfHtmlButtonElements;
+    inputs: IHashOfHtmlInputElements;
+    selects: IHashOfHtmlSelectElements;
+    canvases: IHashOfCanvasElements;
+    contexts: IHashOfContexts;
+    dbCharacters: basicHash;
+
+    initialize(): void;
+    generateCharacter(): void;
+}
 
 class cCHARACTERBUILDER implements ICharacterBuilder {
     private static _instance: cCHARACTERBUILDER;
@@ -16,8 +57,25 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
     iColors: Array<string>;
     iTypes: Array<string>;
     iSides: IHashOfSides;
+    windows: IHashOfHtmlDivElements;
+    divs: IHashOfHtmlDivElements;
+    buttons: IHashOfHtmlButtonElements;
+    inputs: IHashOfHtmlInputElements;
+    selects: IHashOfHtmlSelectElements;
+    canvases: IHashOfCanvasElements;
+    contexts: IHashOfContexts;
+    images: IHashOfHtmlImageElements;
+    dbCharacters: basicHash;
+
+    // Not in the interface because implementation details might be different
+    windowIDs: Array<string>;
+    buttonIDs: Array<string>;
+    inputIDs: Array<string>;
+    selectIDs: Array<string>;
+    divIDs: Array<string>;
+    canvasIDs: Array<string>;
+    imageIDs: Array<string>;
     iImages: Array<any>;
-    xy: Ixy;
     ym: {};
     yw: {};
 
@@ -33,16 +91,92 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             'mante': ['front', 'back'],
             'option': ['front', 'back']
         };
-        this.xy = {};
         this.ym = {};
         this.yw = {};
         this.iImages = [];
+        this.dbCharacters = JSON.parse(require('fs').readFileSync('assets/characters.json', {encoding: 'utf8'}));
 
-        this.dynamicChargen('ym');
-        this.ym = this.xy;
-        this.xy = {};
-        this.dynamicChargen('yw');
-        this.yw = this.xy;
+        this.windows = {};
+        this.divs = {};
+        this.buttons = {};
+        this.inputs = {};
+        this.selects = {};
+        this.canvases = {};
+        this.contexts = {};
+        this.images = {};
+
+        // TODO: See if you can make a function of the loops below. Issue is with dynamic typecasting. Look it up.
+        this.windowIDs = ['character'];
+        for (let x = 0; x < this.windowIDs.length; ++x) {
+            let id = this.windowIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.windows[id] = <HTMLDivElement>el;
+            }
+        }
+        this.inputIDs = ['character_name'];
+        for (let x = 0; x < this.inputIDs.length; ++x) {
+            let id = this.inputIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.inputs[id] = <HTMLInputElement>el;
+            }
+        }
+        this.selectIDs = ['gender'];
+        for (let x = 0; x < this.selectIDs.length; ++x) {
+            let id = this.selectIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.selects[id] = <HTMLSelectElement>el;
+            }
+        }
+        this.buttonIDs = ['save_character'];
+        for (let x = 0; x < this.buttonIDs.length; ++x) {
+            let id = this.buttonIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.buttons[id] = <HTMLButtonElement>el;
+            }
+        }
+        this.divIDs = ['cf_ym', 'cf_yw', 'cf_ym_acce1', 'cf_ym_acce2', 'cf_ym_body', 'cf_ym_hair', 'cf_ym_hairop', 'cf_ym_mante', 'cf_ym_option', 'cf_yw_acce1', 'cf_yw_acce2', 'cf_yw_body', 'cf_yw_hair', 'cf_yw_hairop', 'cf_yw_mante', 'cf_yw_option'];
+        for (let x = 0; x < this.divIDs.length; ++x) {
+            let id = this.divIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.divs[id] = <HTMLDivElement>el;
+            }
+        }
+        this.canvasIDs = ['canvas_character'];
+        for (let x = 0; x < this.canvasIDs.length; ++x) {
+            let id = this.canvasIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.canvases[id] = <HTMLCanvasElement>el;
+                let ctx = this.canvases[id].getContext('2d');
+                if (ctx instanceof CanvasRenderingContext2D) {
+                    this.contexts[id] = ctx;
+                }
+            }
+        }
+        this.imageIDs = ['cg_option_b', 'cg_acce1_b', 'cg_hairop_b', 'cg_hair_b', 'cg_mante_b', 'cg_acce2_b', 'cg_body', 'cg_hair_f', 'cg_acce2_m', 'cg_mante_f', 'cg_acce1_f', 'cg_hair_t', 'cg_acce2_f', 'cg_hairop_f', 'cg_acce1_t', 'cg_option_f'];
+        for (let x = 0; x < this.imageIDs.length; ++x) {
+            let id = this.imageIDs[x];
+            let el = SF.gei(id);
+            if (el instanceof HTMLElement) {
+                this.images[id] = <HTMLImageElement>el;
+            }
+        }
+
+        if (require('fs').existsSync('chargen/chargen_assets.json')) {
+            var assets = require('fs').readFileSync('chargen/chargen_assets.json', {encoding: 'utf8'});
+            assets = JSON.parse(assets);
+            this.ym = assets.ym;
+            this.yw = assets.yw;
+        } else {
+            alert('Cannot find chargen assets JSON!'); // TODO: Proper alert
+            // TODO: At this point, the entire page should just top and not continue
+        }
+
         this.preloadImages('ym', this.ym);
         this.preloadImages('yw', this.yw);
         let totalImages = this.iImages.length;
@@ -54,7 +188,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
                     let img = CHARACTERBUILDER.iImages[x];
                     let gender = img.getAttribute('data-gender');
                     let type = img.getAttribute('data-type');
-                    let parent = document.getElementById('cf_' + gender + '_' + type);
+                    let parent = CHARACTERBUILDER.divs['cf_' + gender + '_' + type];
                     img.addEventListener('click', CHARACTERBUILDER.handleImageClick.bind(CHARACTERBUILDER));
                     if (parent instanceof HTMLElement) {
                         parent.appendChild(img);
@@ -68,42 +202,34 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             img.src = img.getAttribute('data-src');
         }
 
-        let genderSelect = SF.gei('gender');
-        if (genderSelect instanceof HTMLElement) {
-            genderSelect.addEventListener('change', function(e) {
+        this.selects['gender'].addEventListener('change', function(e) {
+            if (e.target && e.target instanceof HTMLSelectElement) {
                 if (e.target.value === 'ym') {
-                    document.getElementById('cf_ym').style.display = 'block';
-                    document.getElementById('cf_yw').style.display = 'none';
+                    CHARACTERBUILDER.divs['cf_ym'].style.display = 'block';
+                    CHARACTERBUILDER.divs['cf_yw'].style.display = 'none';
                 } else {
-                    document.getElementById('cf_ym').style.display = 'none';
-                    document.getElementById('cf_yw').style.display = 'block';
+                    CHARACTERBUILDER.divs['cf_ym'].style.display = 'none';
+                    CHARACTERBUILDER.divs['cf_yw'].style.display = 'block';
                 }
-            });
-        }
+            }
+        });
 
-        let saveCharacter = SF.gei('save_character');
-        if (saveCharacter instanceof HTMLElement) {
-            saveCharacter.addEventListener('click', function () {
-                let nameInput = SF.gei('character_name');
-                if (nameInput instanceof HTMLElement) {
-                    let nin = <HTMLInputElement>nameInput;
-                    let name = nin.value;
-                    if (name === '') {
-                        alert('Please enter a name for this character.'); // TODO: Proper alert
-                    } else {
-                        name = name.replace(/\s+/g, '-').toLowerCase();
-                        let cc = SF.gei('canvas_character');
-                        if (cc instanceof HTMLElement) {
-                            let canvasChar = <HTMLCanvasElement>cc;
-                            let data = canvasChar.toDataURL();
-                            data = data.replace(/^data:image\/(png|jpg);base64,/, "");
-                            require('fs').writeFileSync(name + '.png', data, 'base64'); // TODO: Save this correctly
-                            alert('saved'); // TODO: Proper alert
-                        }
-                    }
+        this.buttons['save_character'].addEventListener('click', function () {
+            let name = CHARACTERBUILDER.inputs['character_name'].value;
+            if (name === '') {
+                alert('Please enter a name for this character.'); // TODO: Proper alert
+            } else {
+                name = name.replace(/\s+/g, '-').toLowerCase();
+                let data = CHARACTERBUILDER.canvases['canvas_character'].toDataURL();
+                data = data.replace(/^data:image\/(png|jpg);base64,/, "");
+                require('fs').writeFileSync('assets/characters/' + name + '.png', data, 'base64');
+                if (!CHARACTERBUILDER.dbCharacters[name]) {
+                    CHARACTERBUILDER.dbCharacters[name] = "";
+                    require('fs').writeFileSync('assets/characters.json', JSON.stringify(CHARACTERBUILDER.dbCharacters), {encoding: 'utf8'});
                 }
-            });
-        }
+                alert('saved'); // TODO: Proper alert
+            }
+        });
     }
     handleImageClick(evt: Event) {
         let target = <HTMLImageElement>evt.target; // TODO: Should put proper checks around this
@@ -129,230 +255,230 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             sides[3] = 1;
         }
         if (isBody) {
-            let bodyElement = document.getElementById('cg_body');
             if (index !== 'none') {
-                bodyElement.src = 'chargen/image/' + gender + '/body/' + index + '_' + color + '.png';
+                this.images['cg_body'].src = 'chargen/image/' + gender + '/body/' + index + '_' + color + '.png';
             } else {
-                bodyElement.src = 'chargen/image/' + gender + '/body/none.png';
+                this.images['cg_body'].src = 'chargen/image/' + gender + '/body/none.png';
             }
-            bodyElement.onerror = function () {
-                bodyElement.setAttribute('data-include', '0');
+            this.images['cg_body'].onerror = function() {
+                CHARACTERBUILDER.images['cg_body'].setAttribute('data-include', '0');
                 CHARACTERBUILDER.generateCharacter();
             }
-            bodyElement.onload = function () {
-                bodyElement.setAttribute('data-include', '1');
+            this.images['cg_body'].onload = function() {
+                CHARACTERBUILDER.images['cg_body'].setAttribute('data-include', '1');
                 CHARACTERBUILDER.generateCharacter();
             }
         } else {
-            let frontElement = document.getElementById('cg_' + type + '_f');
-            if (frontElement instanceof HTMLElement) {
-                frontElement.onerror = function () {
-                    frontElement.setAttribute('data-include', '0');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                frontElement.onload = function () {
-                    frontElement.setAttribute('data-include', '1');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                if (sides[0]) {
-                    frontElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'front_' + gender + '/' + index + '_' + color + '.png';
-                } else {
-                    frontElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'front_' + gender + '/none.png';
-                }
+            let frontEl = this.images['cg_' + type + '_f'];
+            frontEl.onerror = function () {
+                frontEl.setAttribute('data-include', '0');
+                CHARACTERBUILDER.generateCharacter();
             }
-            let backElement = document.getElementById('cg_' + type + '_b');
-            if (backElement instanceof HTMLElement) {
-                backElement.onerror = function () {
-                    backElement.setAttribute('data-include', '0');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                backElement.onload = function () {
-                    backElement.setAttribute('data-include', '1');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                if (sides[1]) {
-                    backElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'back_' + gender + '/' + index + '_' + color + '.png';
-                } else {
-                    backElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'back_' + gender + '/none.png';
-                }
+            frontEl.onload = function () {
+                frontEl.setAttribute('data-include', '1');
+                CHARACTERBUILDER.generateCharacter();
             }
-            let middleElement = document.getElementById('cg_' + type + '_m');
-            if (middleElement instanceof HTMLElement) {
-                middleElement.onerror = function () {
-                    middleElement.setAttribute('data-include', '0');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                middleElement.onload = function () {
-                    middleElement.setAttribute('data-include', '1');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                if (sides[2]) {
-                    middleElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/' + index + '_' + color + '.png';
-                } else {
-                    middleElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/none.png';
-                }
+            if (sides[0]) {
+                frontEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'front_' + gender + '/' + index + '_' + color + '.png';
+            } else {
+                frontEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'front_' + gender + '/none.png';
             }
-            let topElement = document.getElementById('cg_' + type + '_t');
-            if (topElement instanceof HTMLElement) {
-                topElement.onerror = function () {
-                    topElement.setAttribute('data-include', '0');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                topElement.onload = function () {
-                    topElement.setAttribute('data-include', '1');
-                    CHARACTERBUILDER.generateCharacter();
-                }
-                if (sides[3]) {
-                    topElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/' + index + '_' + color + '.png';
-                } else {
-                    topElement.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/none.png';
-                }
+
+            let backEl = this.images['cg_' + type + '_b'];
+            backEl.onerror = function () {
+                backEl.setAttribute('data-include', '0');
+                CHARACTERBUILDER.generateCharacter();
+            }
+            backEl.onload = function () {
+                backEl.setAttribute('data-include', '1');
+                CHARACTERBUILDER.generateCharacter();
+            }
+            if (sides[1]) {
+                backEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'back_' + gender + '/' + index + '_' + color + '.png';
+            } else {
+                backEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'back_' + gender + '/none.png';
+            }
+
+            let middleEl = this.images['cg_' + type + '_m'];
+            middleEl.onerror = function () {
+                middleEl.setAttribute('data-include', '0');
+                CHARACTERBUILDER.generateCharacter();
+            }
+            middleEl.onload = function () {
+                middleEl.setAttribute('data-include', '1');
+                CHARACTERBUILDER.generateCharacter();
+            }
+            if (sides[2]) {
+                middleEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/' + index + '_' + color + '.png';
+            } else {
+                middleEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/none.png';
+            }
+
+            let topEl = this.images['cg_' + type + '_t'];
+            topEl.onerror = function () {
+                topEl.setAttribute('data-include', '0');
+                CHARACTERBUILDER.generateCharacter();
+            }
+            topEl.onload = function () {
+                topEl.setAttribute('data-include', '1');
+                CHARACTERBUILDER.generateCharacter();
+            }
+            if (sides[3]) {
+                topEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/' + index + '_' + color + '.png';
+            } else {
+                topEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/none.png';
             }
         }
     }
     generateCharacter() {
-        let cc = document.getElementById('canvas_character');
-        let cx = cc.getContext('2d');
-        cx.clearRect(0, 0, cc.width, cc.height);
+        this.contexts['canvas_character'].clearRect(0, 0, this.canvases['canvas_character'].width, this.canvases['canvas_character'].height);
         let images = document.querySelectorAll('#character_image_container img');
         for (let m in images) {
             let img = images[m];
             if (img instanceof HTMLElement) {
-                if (img.id === 'cg_body') {
-                    cx.drawImage(img, 0, 0);
+                let charImg = <HTMLImageElement>img;
+                if (charImg.id === 'cg_body') {
+                    this.contexts['canvas_character'].drawImage(charImg, 0, 0);
                 } else {
-                    if (img.getAttribute('data-include')) {
-                        let include = parseInt(img.getAttribute('data-include'));
+                    let dInclude = charImg.getAttribute('data-include');
+                    if (dInclude !== '' && dInclude !== null) {
+                        let include = parseInt(dInclude);
                         if (include) {
-                            cx.drawImage(img, 0, 0);
+                            this.contexts['canvas_character'].drawImage(charImg, 0, 0);
                         }
                     }
                 }
             }
         }
     }
-    dynamicChargen(gender: string) {
-        for (let iType in CHARACTERBUILDER.iTypes) {
-            let type = CHARACTERBUILDER.iTypes[iType];
-            let typePath = 'chargen/icon/' + gender + '/' + type + '/';
-            let files = require('fs').readdirSync(typePath);
-            if (!this.xy[type]) {
-                this.xy[type] = {};
-            }
-            if (type !== 'body') {
-                for (let x = 0; x < files.length; ++x) {
-                    let fileName = files[x];
-                    if (fileName !== 'none.gif') {
-                        let fileNameSplit = fileName.split('_');
-                        let id = fileNameSplit[0];
-                        let color = fileNameSplit[1];
-                        color = color.replace(/\.gif/, '');
-
-                        if (!this.xy[type][id]) {
-                            this.xy[type][id] = {};
-                        }
-                        if (!this.xy[type][id][color]) {
-                            this.xy[type][id][color] = {};
-                        }
-
-                        let has = {'front': false, 'back': false, 'middle': false, 'top': false};
-                        let sides = CHARACTERBUILDER.iSides[type];
-                        for (let s = 0; s < sides.length; ++s) {
-                            let side = sides[s];
-                            let sidesPath = 'chargen/image/' + gender + '/' + type + '/' + side + '_' + gender + '/';
-                            sidesPath = sidesPath + fileName.replace(/\.gif/, '.png');
-                            if (require('fs').existsSync(sidesPath)) {
-                                has[side] = true;
-                            }
-                        }
-
-                        this.xy[type][id][color] = has;
-                    } else {
-                        if (!this.xy[type]['none']) {
-                            this.xy[type]['none'] = 1;
-                        }
-                    }
-                }
-            } else {
-                for (let x = 0; x < files.length; ++x) {
-                    let fileName = files[x];
-                    if (fileName !== 'none.gif') {
-                        let fileNameSplit = fileName.split('_');
-                        let id = fileNameSplit[0];
-                        let color = fileNameSplit[1];
-                        color = color.replace(/\.gif/, '');
-
-                        if (!this.xy[type][id]) {
-                            this.xy[type][id] = [];
-                        }
-                        this.xy[type][id].push(color);
-                    } else {
-                        if (!this.xy[type]['none']) {
-                            this.xy[type]['none'] = 1;
-                        }
-                    }
-                }
-            }
-        }
-    }
-    preloadImages(gender: string, from: Object) {
+    // dynamicChargen(gender: string) {
+    //     for (let iType in CHARACTERBUILDER.iTypes) {
+    //         let type = CHARACTERBUILDER.iTypes[iType];
+    //         let typePath = 'chargen/icon/' + gender + '/' + type + '/';
+    //         let files = require('fs').readdirSync(typePath);
+    //         if (!this.xy[type]) {
+    //             this.xy[type] = {};
+    //         }
+    //         if (type !== 'body') {
+    //             for (let x = 0; x < files.length; ++x) {
+    //                 let fileName = files[x];
+    //                 if (fileName !== 'none.gif') {
+    //                     let fileNameSplit = fileName.split('_');
+    //                     let id = fileNameSplit[0];
+    //                     let color = fileNameSplit[1];
+    //                     color = color.replace(/\.gif/, '');
+    //
+    //                     if (!this.xy[type][id]) {
+    //                         this.xy[type][id] = {};
+    //                     }
+    //                     if (!this.xy[type][id][color]) {
+    //                         this.xy[type][id][color] = {};
+    //                     }
+    //
+    //                     let has:{[key: string]: boolean} = {'front': false, 'back': false, 'middle': false, 'top': false};
+    //                     let sides = CHARACTERBUILDER.iSides[type];
+    //                     for (let s = 0; s < sides.length; ++s) {
+    //                         let side = sides[s];
+    //                         let sidesPath = 'chargen/image/' + gender + '/' + type + '/' + side + '_' + gender + '/';
+    //                         sidesPath = sidesPath + fileName.replace(/\.gif/, '.png');
+    //                         if (require('fs').existsSync(sidesPath)) {
+    //                             has[side] = true;
+    //                         }
+    //                     }
+    //
+    //                     this.xy[type][id][color] = has;
+    //                 } else {
+    //                     if (!this.xy[type]['none']) {
+    //                         this.xy[type]['none'] = 1;
+    //                     }
+    //                 }
+    //             }
+    //         } else {
+    //             for (let x = 0; x < files.length; ++x) {
+    //                 let fileName = files[x];
+    //                 if (fileName !== 'none.gif') {
+    //                     let fileNameSplit = fileName.split('_');
+    //                     let id = fileNameSplit[0];
+    //                     let color = fileNameSplit[1];
+    //                     color = color.replace(/\.gif/, '');
+    //
+    //                     if (!this.xy[type][id]) {
+    //                         this.xy[type][id] = [];
+    //                     }
+    //                     this.xy[type][id].push(color);
+    //                 } else {
+    //                     if (!this.xy[type]['none']) {
+    //                         this.xy[type]['none'] = 1;
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
+    preloadImages(gender: string, from: basicHash) {
         function generateImageElement(gender: any, type: any, index: any, color: any, colors: any) {
-            let imgElement = document.createElement('img');
-            imgElement.setAttribute('data-src', 'chargen/icon/' + gender + '/' + type + '/' + index + '_' + color + '.gif');
-            imgElement.setAttribute('data-front', '0');
-            if (colors[color]['front']) {
-                imgElement.setAttribute('data-front', '1');
-            }
-            imgElement.setAttribute('data-back', '0');
-            if (colors[color]['back']) {
-                imgElement.setAttribute('data-back', '1');
-            }
-            imgElement.setAttribute('data-middle', '0');
-            if (colors[color]['middle']) {
-                imgElement.setAttribute('data-middle', '1');
-            }
-            imgElement.setAttribute('data-top', '0');
-            if (colors[color]['top']) {
-                imgElement.setAttribute('data-top', '1');
-            }
-            imgElement.setAttribute('data-body', '0');
-            imgElement.setAttribute('data-gender', gender);
-            imgElement.setAttribute('data-type', type);
-            imgElement.setAttribute('data-index', index);
-            imgElement.setAttribute('data-color', color);
+            let imgElement = SF.ce('img');
+            if (imgElement instanceof HTMLElement) {
+                imgElement.setAttribute('data-src', 'chargen/icon/' + gender + '/' + type + '/' + index + '_' + color + '.gif');
+                imgElement.setAttribute('data-front', '0');
+                if (colors[color]['front']) {
+                    imgElement.setAttribute('data-front', '1');
+                }
+                imgElement.setAttribute('data-back', '0');
+                if (colors[color]['back']) {
+                    imgElement.setAttribute('data-back', '1');
+                }
+                imgElement.setAttribute('data-middle', '0');
+                if (colors[color]['middle']) {
+                    imgElement.setAttribute('data-middle', '1');
+                }
+                imgElement.setAttribute('data-top', '0');
+                if (colors[color]['top']) {
+                    imgElement.setAttribute('data-top', '1');
+                }
+                imgElement.setAttribute('data-body', '0');
+                imgElement.setAttribute('data-gender', gender);
+                imgElement.setAttribute('data-type', type);
+                imgElement.setAttribute('data-index', index);
+                imgElement.setAttribute('data-color', color);
 
-            return imgElement;
+                return imgElement;
+            }
         }
 
         function generateBodyImageElement(gender: any, type: any, index: any, color: any) {
-            let imgElement = document.createElement('img');
-            imgElement.setAttribute('data-src', 'chargen/icon/' + gender + '/' + type + '/' + index + '_' + color + '.gif');
-            imgElement.setAttribute('data-front', '0');
-            imgElement.setAttribute('data-back', '0');
-            imgElement.setAttribute('data-middle', '0');
-            imgElement.setAttribute('data-top', '0');
-            imgElement.setAttribute('data-body', '1');
-            imgElement.setAttribute('data-gender', gender);
-            imgElement.setAttribute('data-type', type);
-            imgElement.setAttribute('data-index', index);
-            imgElement.setAttribute('data-color', color);
+            let imgElement = SF.ce('img');
+            if (imgElement instanceof HTMLElement) {
+                imgElement.setAttribute('data-src', 'chargen/icon/' + gender + '/' + type + '/' + index + '_' + color + '.gif');
+                imgElement.setAttribute('data-front', '0');
+                imgElement.setAttribute('data-back', '0');
+                imgElement.setAttribute('data-middle', '0');
+                imgElement.setAttribute('data-top', '0');
+                imgElement.setAttribute('data-body', '1');
+                imgElement.setAttribute('data-gender', gender);
+                imgElement.setAttribute('data-type', type);
+                imgElement.setAttribute('data-index', index);
+                imgElement.setAttribute('data-color', color);
 
-            return imgElement;
+                return imgElement;
+            }
         }
         function generateNoneImageElement(gender: any, type: any, isBody: any) {
-            let imgElement = document.createElement('img');
-            imgElement.setAttribute('data-src', 'chargen/icon/' + gender + '/' + type + '/' + 'none.gif');
-            imgElement.setAttribute('data-front', '0');
-            imgElement.setAttribute('data-back', '0');
-            imgElement.setAttribute('data-middle', '0');
-            imgElement.setAttribute('data-top', '0');
-            imgElement.setAttribute('data-body', isBody);
-            imgElement.setAttribute('data-gender', gender);
-            imgElement.setAttribute('data-type', type);
-            imgElement.setAttribute('data-index', 'none');
-            imgElement.setAttribute('data-color', 'none');
+            let imgElement = SF.ce('img');
+            if (imgElement instanceof HTMLElement) {
+                imgElement.setAttribute('data-src', 'chargen/icon/' + gender + '/' + type + '/' + 'none.gif');
+                imgElement.setAttribute('data-front', '0');
+                imgElement.setAttribute('data-back', '0');
+                imgElement.setAttribute('data-middle', '0');
+                imgElement.setAttribute('data-top', '0');
+                imgElement.setAttribute('data-body', isBody);
+                imgElement.setAttribute('data-gender', gender);
+                imgElement.setAttribute('data-type', type);
+                imgElement.setAttribute('data-index', 'none');
+                imgElement.setAttribute('data-color', 'none');
 
-            return imgElement;
+                return imgElement;
+            }
         }
         for (let type in from) {
             if (type !== 'body') {
@@ -360,8 +486,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
                     if (index !== 'none') {
                         let colors = from[type][index];
                         for (let c in colors) {
-                            let color = c;
-                            let imgElement = generateImageElement(gender, type, index, color, colors);
+                            let imgElement = generateImageElement(gender, type, index, c, colors);
                             this.iImages.push(imgElement);
                         }
                     } else {

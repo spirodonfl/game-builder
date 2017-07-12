@@ -58,3 +58,9 @@ jspm_packages/
 nwjs
 
 !/typings/*
+
+assets/*/*.json
+
+!assets/*/*.default.json
+
+assets/*/*.png
