@@ -125,7 +125,10 @@ class cMAPBUILDER implements IMapBuilder {
             require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64');
         }
         require('fs').writeFileSync('assets/maps/' + name + '.json', JSON.stringify(this.mapDetails), 'utf8');
-        // TODO: 'assets/maps.default.json' and 'assets/maps.json'
+        if (!this.dbMaps[name]) {
+            this.dbMaps[name] = "";
+            require('fs').writeFileSync('assets/maps.json', JSON.stringify(this.dbMaps), {encoding: 'utf8'});
+        }
     }
     createNewMap() {
         if (this.inputs['new_map_name'].value === '') {
