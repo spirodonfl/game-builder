@@ -18,7 +18,6 @@ class cMAPBUILDER implements IMapBuilder {
     allLayersActive: boolean;
     selectedTileImage: HTMLImageElement;
     dbMaps: basicHash; // TODO: Add to interface?
-    fileToLoad: string; // TODO: Add to interface?
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -277,7 +276,7 @@ class cMAPBUILDER implements IMapBuilder {
         img.onerror = function () {
             alert('Layer image did not load'); // TODO: proper alert
         }
-        img.src = 'assets/maps/' + this.mapDetails.name + '-layer-' + id + '.png';
+        img.src = 'assets/maps/' + this.mapDetails.name + '-layer-' + layerID + '.png';
     }
     addNewLayer() {
         let layerID = this.mapDetails.layers;
@@ -339,6 +338,7 @@ class cMAPBUILDER implements IMapBuilder {
         }
     }
     deleteLayer(layerID: number) {
+        // TODO: Re-structure the layer IDs so you're not just incrementing all the time?
         // TODO: Make this a keyboard shortcut too?
         if (layerID === this.activeLayer && layerID > 0) {
             this.switchToPreviousLayer();
