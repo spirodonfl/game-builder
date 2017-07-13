@@ -33,6 +33,7 @@ interface IHashOfMapDetails {
     width: number;
     height: number;
     layers: number;
+    layerNames: Array<string>;
 }
 interface IMapBuilder {
     ee: EventEmitter;

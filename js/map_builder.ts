@@ -17,7 +17,8 @@ class cMAPBUILDER implements IMapBuilder {
     clearClick: boolean;
     allLayersActive: boolean;
     selectedTileImage: HTMLImageElement;
-    dbMaps: basicHash;
+    dbMaps: basicHash; // TODO: Add to interface?
+    fileToLoad: string; // TODO: Add to interface?
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -35,7 +36,8 @@ class cMAPBUILDER implements IMapBuilder {
             name: '',
             width: 0,
             height: 0,
-            layers: 0
+            layers: 0,
+            layerNames: []
         }
         this.activeLayer = 0;
         this.mapLayerCanvases = {};
@@ -53,7 +55,7 @@ class cMAPBUILDER implements IMapBuilder {
             }
         }
 
-        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over'];
+        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map'];
         for (let b = 0; b < this.buttonIDs.length; ++b) {
             let id = this.buttonIDs[b];
             let elementButton = SF.gei(id);
@@ -62,7 +64,7 @@ class cMAPBUILDER implements IMapBuilder {
             }
         }
 
-        this.inputIDs = ['new_map_name', 'new_map_grid_x', 'new_map_grid_y', 'choose_tile'];
+        this.inputIDs = ['new_map_name', 'new_map_grid_x', 'new_map_grid_y', 'choose_tile', 'load_map_file'];
         for (let i = 0; i < this.inputIDs.length; ++i) {
             let id = this.inputIDs[i];
             let elementInput = SF.gei(id);
@@ -86,8 +88,9 @@ class cMAPBUILDER implements IMapBuilder {
         }
 
         this.buttons['choose_new_map'].addEventListener('click', this.choseNewMap.bind(this));
-        // this.buttons['choose_load_map'].addEventListener('click', this.loadMap.bind(this)); // TODO: this
+        this.buttons['choose_load_map'].addEventListener('click', this.choseLoadMap.bind(this));
         this.buttons['create_map'].addEventListener('click', this.createNewMap.bind(this));
+        this.buttons['load_map'].addEventListener('click', this.loadMap.bind(this));
 
         KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f7'], function () {
             if (HOVERMOUSETRAP.stickyGrid) {
@@ -101,6 +104,10 @@ class cMAPBUILDER implements IMapBuilder {
         HOVERMOUSETRAP.initialize();
 
         this.start();
+    }
+    choseLoadMap() {
+        this.hideAllWindows();
+        this.windows['load_map_form'].style.display = 'block';
     }
     toggleClearClick() {
         if (this.clearClick) {
@@ -118,11 +125,13 @@ class cMAPBUILDER implements IMapBuilder {
         // TODO: Delete map data JSON and associated layers
         let name = this.mapDetails.name;
         name = name.replace(/\s+/g, '-').toLowerCase();
+        this.mapDetails.layerNames = [];
         for (let layerName in this.mapLayerCanvases) {
             let layerCanvas = this.mapLayerCanvases[layerName];
             let srcData = layerCanvas.toDataURL();
             srcData = srcData.replace(/^data:image\/(png|jpg);base64,/, "")
             require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64');
+            this.mapDetails.layerNames.push(layerName);
         }
         require('fs').writeFileSync('assets/maps/' + name + '.json', JSON.stringify(this.mapDetails), 'utf8');
         if (!this.dbMaps[name]) {
@@ -151,7 +160,11 @@ class cMAPBUILDER implements IMapBuilder {
             this.addNewLayer();
             this.setActiveLayer(0);
         } else {
-            // TODO: Load layers and inject into DOM one by one (or async?)
+            for (let ln in this.mapDetails.layerNames) {
+                let layerName = this.mapDetails.layerNames[ln];
+                let layerID = parseInt(layerName.split('-')[1]);
+                this.addLoadedLayer(layerID);
+            }
         }
         // Resize mousetrap && existing layers to map details
         HOVERMOUSETRAP.canvasHover.width = this.mapDetails.width * 32;
@@ -210,7 +223,61 @@ class cMAPBUILDER implements IMapBuilder {
         this.windows['builder'].style.display = 'none';
     }
     loadMap() {
-        // TODO: this
+        let files = this.inputs['load_map_file'].files;
+        if (files instanceof FileList && files[0] instanceof File) {
+            let path = files[0].path;
+            this.mapDetails = JSON.parse(require('fs').readFileSync(path, {encoding: 'utf8'}));
+            this.initializeBuilder(false);
+        }
+    }
+    addLoadedLayer(layerID: number) {
+        let me = this;
+        let img = new Image();
+        img.onload = function () {
+            // TODO: Create a canvas and a context. Draw the image on it.
+            // TODO: Add the list item with the buttons and whatnot.
+            let listLayer = SF.ce('li');
+            if (listLayer) {
+                listLayer.setAttribute('data-layer', '' + layerID);
+                listLayer.innerHTML = 'Layer ' + layerID;
+                let delBtn = SF.ce('button');
+                if (delBtn) {
+                    delBtn.className = 'button delete-layer';
+                    delBtn.setAttribute('data-layer', layerID.toString());
+                    delBtn.innerHTML = 'x';
+                    listLayer.appendChild(delBtn);
+                    delBtn.addEventListener('click', me.deleteLayerButtonClicked.bind(this));
+                }
+                let actBtn = SF.ce('button');
+                if (actBtn) {
+                    actBtn.className = 'button active-layer';
+                    actBtn.setAttribute('data-layer', layerID.toString());
+                    actBtn.innerHTML = 'O';
+                    listLayer.appendChild(actBtn);
+                    actBtn.addEventListener('click', me.activeLayerButtonClicked.bind(this));
+                }
+                let canvasLayer = SF.ce('canvas');
+                if (canvasLayer) {
+                    let cl = <HTMLCanvasElement>canvasLayer;
+                    cl.className = 'canvas-layer';
+                    cl.width = me.mapDetails.width * 32;
+                    cl.height = me.mapDetails.height * 32;
+                    cl.style.zIndex = layerID.toString();
+                    cl.setAttribute('data-layer', layerID.toString());
+                    me.divs['canvas_layers'].appendChild(cl);
+                    me.mapLayerCanvases['layer-' + layerID.toString()] = cl;
+                    let ctx = cl.getContext('2d');
+                    if (ctx) {
+                        me.mapLayerContexts['layer-' + layerID.toString()] = ctx;
+                    }
+                }
+                me.divs['list_layers'].appendChild(listLayer);
+            }
+        }
+        img.onerror = function () {
+            alert('Layer image did not load'); // TODO: proper alert
+        }
+        img.src = 'assets/maps/' + this.mapDetails.name + '-layer-' + id + '.png';
     }
     addNewLayer() {
         let layerID = this.mapDetails.layers;
