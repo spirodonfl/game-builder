@@ -17,6 +17,7 @@ class cMAPBUILDER implements IMapBuilder {
     clearClick: boolean;
     allLayersActive: boolean;
     selectedTileImage: HTMLImageElement;
+    dbMaps: basicHash;
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -41,6 +42,7 @@ class cMAPBUILDER implements IMapBuilder {
         this.mapLayerContexts = {};
         this.allLayersActive = false;
         this.clearClick = false;
+        this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
 
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
         for (let w = 0; w < this.windowIDs.length; ++w) {
@@ -120,7 +122,7 @@ class cMAPBUILDER implements IMapBuilder {
             let layerCanvas = this.mapLayerCanvases[layerName];
             let srcData = layerCanvas.toDataURL();
             srcData = srcData.replace(/^data:image\/(png|jpg);base64,/, "")
-            require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64'); // TODO: Put this in a proper folder!
+            require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64');
         }
         require('fs').writeFileSync('assets/maps/' + name + '.json', JSON.stringify(this.mapDetails), 'utf8');
         // TODO: 'assets/maps.default.json' and 'assets/maps.json'
