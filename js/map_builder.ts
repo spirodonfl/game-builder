@@ -122,6 +122,7 @@ class cMAPBUILDER implements IMapBuilder {
     saveMap() {
         // TODO: Be smarter about how you cleanup. The only real kicker (so far) is deleting layers that have been deleted.
         // TODO: Delete map data JSON and associated layers
+        // TODO: Issue to fix! Load a map. Add a new layer. Draw something on it. Save the new map. The layer you created is blank and the previous layer actually took what you drew. Strange.
         let name = this.mapDetails.name;
         name = name.replace(/\s+/g, '-').toLowerCase();
         this.mapDetails.layerNames = [];
@@ -163,6 +164,9 @@ class cMAPBUILDER implements IMapBuilder {
             for (let ln in this.mapDetails.layerNames) {
                 let layerName = this.mapDetails.layerNames[ln];
                 let layerID = parseInt(layerName.split('-')[1]);
+                if (!this.activeLayer) {
+                    this.setActiveLayer(layerID);
+                }
                 this.addLoadedLayer(layerID);
             }
         }
@@ -246,7 +250,7 @@ class cMAPBUILDER implements IMapBuilder {
                     delBtn.setAttribute('data-layer', layerID.toString());
                     delBtn.innerHTML = 'x';
                     listLayer.appendChild(delBtn);
-                    delBtn.addEventListener('click', me.deleteLayerButtonClicked.bind(this));
+                    delBtn.addEventListener('click', me.deleteLayerButtonClicked.bind(me));
                 }
                 let actBtn = SF.ce('button');
                 if (actBtn) {
@@ -254,7 +258,7 @@ class cMAPBUILDER implements IMapBuilder {
                     actBtn.setAttribute('data-layer', layerID.toString());
                     actBtn.innerHTML = 'O';
                     listLayer.appendChild(actBtn);
-                    actBtn.addEventListener('click', me.activeLayerButtonClicked.bind(this));
+                    actBtn.addEventListener('click', me.activeLayerButtonClicked.bind(me));
                 }
                 let canvasLayer = SF.ce('canvas');
                 if (canvasLayer) {
