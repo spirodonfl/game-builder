@@ -268,6 +268,7 @@ class cMAPBUILDER implements IMapBuilder {
                     let ctx = cl.getContext('2d');
                     if (ctx) {
                         me.mapLayerContexts['layer-' + layerID.toString()] = ctx;
+                        ctx.drawImage(img, 0, 0);
                     }
                 }
                 me.divs['list_layers'].appendChild(listLayer);
