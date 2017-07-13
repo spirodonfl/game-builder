@@ -252,7 +252,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
             } else {
                 backEl.src = 'chargen/image/' + gender + '/' + type + '/' + 'back_' + gender + '/none.png';
             }
-
+            // TODO: Sometimes these elements do not exist. Don't do anything with them if they don't
             let middleEl = this.images['cg_' + type + '_m'];
             middleEl.onerror = function () {
                 middleEl.setAttribute('data-include', '0');

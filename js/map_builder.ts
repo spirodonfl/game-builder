@@ -137,6 +137,7 @@ class cMAPBUILDER implements IMapBuilder {
             this.dbMaps[name] = "";
             require('fs').writeFileSync('assets/maps.json', JSON.stringify(this.dbMaps), {encoding: 'utf8'});
         }
+        alert('saved'); // TODO: Proper alert
     }
     createNewMap() {
         if (this.inputs['new_map_name'].value === '') {
