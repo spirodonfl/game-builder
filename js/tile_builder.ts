@@ -1,6 +1,3 @@
-interface basicHash {
-    [key: string]: any;
-}
 interface ITileBuilder {
     // Reference to the window that you can hide or show and where the form is to save the tile
     mainWindow: HTMLElement;
