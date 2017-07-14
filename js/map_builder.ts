@@ -120,11 +120,12 @@ class cMAPBUILDER implements IMapBuilder {
         this.windows['new_map_form'].style.display = 'block';
     }
     saveMap() {
-        // TODO: Be smarter about how you cleanup. The only real kicker (so far) is deleting layers that have been deleted.
-        // TODO: Delete map data JSON and associated layers
-        // TODO: Issue to fix! Load a map. Add a new layer. Draw something on it. Save the new map. The layer you created is blank and the previous layer actually took what you drew. Strange.
         let name = this.mapDetails.name;
         name = name.replace(/\s+/g, '-').toLowerCase();
+        for (let ln in this.mapDetails.layerNames) {
+            let layerName = this.mapDetails.layerNames[ln];
+            require('fs').unlinkSync('assets/maps/' + name + '-' + layerName + '.png');
+        }
         this.mapDetails.layerNames = [];
         for (let layerName in this.mapLayerCanvases) {
             let layerCanvas = this.mapLayerCanvases[layerName];
@@ -166,6 +167,7 @@ class cMAPBUILDER implements IMapBuilder {
                 let layerID = parseInt(layerName.split('-')[1]);
                 if (!this.activeLayer) {
                     this.setActiveLayer(layerID);
+                    // TODO: This is not working 100%. It does not seem to initialize fully. Need to sort this one out.
                 }
                 this.addLoadedLayer(layerID);
             }
