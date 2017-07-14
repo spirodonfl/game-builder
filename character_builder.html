@@ -4,6 +4,7 @@
         <title>Game Builder: Characters</title>
         <link rel="stylesheet" href="/css/general.css" />
         <link rel="stylesheet" href="/css/HoverMouseTrap.css" />
+        <link rel="stylesheet" href="/css/alert.css" />
     </head>
     <body id="character_builder">
         <div class="window" id="character">
@@ -73,19 +74,21 @@
             </div>
         </div>
 
+        <div id="alert_overlay"></div>
+        <div class="window floating" id="window_alert">
+            <div class="inner">
+                <div id="window_alert_title">Test</div>
+                <div id="window_alert_content">I'm awesome and here's why!</div>
+                <button id="window_alert_ok" class="button">Ok</button>
+            </div>
+        </div>
+
         <script type="text/javascript" src="/js/SF.js"></script>
         <script type="text/javascript" src="/js/EventEmitter.js"></script>
         <script type="text/javascript" src="/js/Keyboard.js"></script>
         <script type="text/javascript" src="/js/HoverMouseTrap.js"></script>
-        <script type="text/javascript">
-            KEYBOARD.initialize();
-            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f4'], function () {
-                window.location = 'index.html';
-            });
-            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f5'], function () {
-                window.location.reload();
-            });
-        </script>
+        <script type="text/javascript" src="/js/alert.js"></script>
+        <script type="text/javascript" src="/js/general.js"></script>
         <script type="text/javascript" src="/js/character_builder.js"></script>
     </body>
 </html>

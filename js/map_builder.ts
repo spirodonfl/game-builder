@@ -12,8 +12,8 @@ class cMAPBUILDER implements IMapBuilder {
     inputs: IHashOfHtmlInputElements;
     mapDetails: IHashOfMapDetails;
     activeLayer: number;
-    mapLayerCanvases: IHashOfMapLayerCanvases;
-    mapLayerContexts: IHashOfMapLayerContexts;
+    mapLayerCanvases: IHashOfHtmlCanvasElements;
+    mapLayerContexts: IHashOfContexts;
     clearClick: boolean;
     allLayersActive: boolean;
     selectedTileImage: HTMLImageElement;

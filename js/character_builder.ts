@@ -13,7 +13,7 @@ class cCHARACTERBUILDER implements ICharacterBuilder {
     buttons: IHashOfHtmlButtonElements;
     inputs: IHashOfHtmlInputElements;
     selects: IHashOfHtmlSelectElements;
-    canvases: IHashOfCanvasElements;
+    canvases: IHashOfHtmlCanvasElements;
     contexts: IHashOfContexts;
     images: IHashOfHtmlImageElements;
     dbCharacters: basicHash;

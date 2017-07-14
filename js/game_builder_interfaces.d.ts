@@ -19,10 +19,10 @@ interface IHashOfHtmlInputElements {
 interface IHashOfHtmlButtonElements {
     [key: string]: HTMLButtonElement;
 }
-interface IHashOfMapLayerCanvases {
+interface IHashOfHtmlCanvasElements {
     [key: string]: HTMLCanvasElement;
 }
-interface IHashOfMapLayerContexts {
+interface IHashOfContexts {
     [key: string]: CanvasRenderingContext2D;
 }
 interface IHashOfHtmlSelectElements {
