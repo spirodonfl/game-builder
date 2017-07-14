@@ -240,8 +240,6 @@ class cMAPBUILDER implements IMapBuilder {
         let me = this;
         let img = new Image();
         img.onload = function () {
-            // TODO: Create a canvas and a context. Draw the image on it.
-            // TODO: Add the list item with the buttons and whatnot.
             let listLayer = SF.ce('li');
             if (listLayer) {
                 listLayer.setAttribute('data-layer', '' + layerID);
