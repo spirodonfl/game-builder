@@ -18,6 +18,7 @@ class cMAPBUILDER implements IMapBuilder {
     allLayersActive: boolean;
     selectedTileImage: HTMLImageElement;
     dbMaps: basicHash; // TODO: Add to interface?
+    availableMaps: basicHash;
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -43,6 +44,7 @@ class cMAPBUILDER implements IMapBuilder {
         this.mapLayerContexts = {};
         this.allLayersActive = false;
         this.clearClick = false;
+        this.availableMaps = {};
         this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
 
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
@@ -107,6 +109,17 @@ class cMAPBUILDER implements IMapBuilder {
     choseLoadMap() {
         this.hideAllWindows();
         this.windows['load_map_form'].style.display = 'block';
+        this.availableMaps = JSON.parse(require('fs').readFileSync('assets/maps.json'));
+        for (let m in this.availableMaps) {
+            let mapName = m;
+            let op = SF.ce('option');
+            if (op instanceof HTMLElement) {
+                let option = <HTMLOptionElement>op;
+                option.value = mapName;
+                option.innerHTML = mapName;
+                this.inputs['load_map_file'].appendChild(option);
+            }
+        }
     }
     toggleClearClick() {
         if (this.clearClick) {
@@ -165,10 +178,6 @@ class cMAPBUILDER implements IMapBuilder {
             for (let ln in this.mapDetails.layerNames) {
                 let layerName = this.mapDetails.layerNames[ln];
                 let layerID = parseInt(layerName.split('-')[1]);
-                if (!this.activeLayer) {
-                    this.setActiveLayer(layerID);
-                    // TODO: This is not working 100%. It does not seem to initialize fully. Need to sort this one out.
-                }
                 this.addLoadedLayer(layerID);
             }
         }
@@ -229,12 +238,9 @@ class cMAPBUILDER implements IMapBuilder {
         this.windows['builder'].style.display = 'none';
     }
     loadMap() {
-        let files = this.inputs['load_map_file'].files;
-        if (files instanceof FileList && files[0] instanceof File) {
-            let path = files[0].path;
-            this.mapDetails = JSON.parse(require('fs').readFileSync(path, {encoding: 'utf8'}));
-            this.initializeBuilder(false);
-        }
+        let path = 'assets/maps/' + this.inputs['load_map_file'].value + '.json';
+        this.mapDetails = JSON.parse(require('fs').readFileSync(path, {encoding: 'utf8'}));
+        this.initializeBuilder(false);
     }
     addLoadedLayer(layerID: number) {
         let me = this;
@@ -274,9 +280,13 @@ class cMAPBUILDER implements IMapBuilder {
                     if (ctx) {
                         me.mapLayerContexts['layer-' + layerID.toString()] = ctx;
                         ctx.drawImage(img, 0, 0);
+
+                        me.divs['list_layers'].appendChild(listLayer);
+                        if (!me.activeLayer) {
+                            me.setActiveLayer(layerID);
+                        }
                     }
                 }
-                me.divs['list_layers'].appendChild(listLayer);
             }
         }
         img.onerror = function () {

@@ -28,6 +28,7 @@ var cMAPBUILDER = (function () {
         this.mapLayerContexts = {};
         this.allLayersActive = false;
         this.clearClick = false;
+        this.availableMaps = {};
         this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', { encoding: 'utf8' })); // TODO: Error out if this does not exist or create a blank one
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
         for (var w = 0; w < this.windowIDs.length; ++w) {
@@ -85,6 +86,17 @@ var cMAPBUILDER = (function () {
     cMAPBUILDER.prototype.choseLoadMap = function () {
         this.hideAllWindows();
         this.windows['load_map_form'].style.display = 'block';
+        this.availableMaps = JSON.parse(require('fs').readFileSync('assets/maps.json'));
+        for (var m in this.availableMaps) {
+            var mapName = m;
+            var op = SF.ce('option');
+            if (op instanceof HTMLElement) {
+                var option = op;
+                option.value = mapName;
+                option.innerHTML = mapName;
+                this.inputs['load_map_file'].appendChild(option);
+            }
+        }
     };
     cMAPBUILDER.prototype.toggleClearClick = function () {
         if (this.clearClick) {
@@ -148,10 +160,6 @@ var cMAPBUILDER = (function () {
             for (var ln in this.mapDetails.layerNames) {
                 var layerName = this.mapDetails.layerNames[ln];
                 var layerID = parseInt(layerName.split('-')[1]);
-                if (!this.activeLayer) {
-                    this.setActiveLayer(layerID);
-                    // TODO: This is not working 100%. It does not seem to initialize fully. Need to sort this one out.
-                }
                 this.addLoadedLayer(layerID);
             }
         }
@@ -209,12 +217,9 @@ var cMAPBUILDER = (function () {
         this.windows['builder'].style.display = 'none';
     };
     cMAPBUILDER.prototype.loadMap = function () {
-        var files = this.inputs['load_map_file'].files;
-        if (files instanceof FileList && files[0] instanceof File) {
-            var path = files[0].path;
-            this.mapDetails = JSON.parse(require('fs').readFileSync(path, { encoding: 'utf8' }));
-            this.initializeBuilder(false);
-        }
+        var path = 'assets/maps/' + this.inputs['load_map_file'].value + '.json';
+        this.mapDetails = JSON.parse(require('fs').readFileSync(path, { encoding: 'utf8' }));
+        this.initializeBuilder(false);
     };
     cMAPBUILDER.prototype.addLoadedLayer = function (layerID) {
         var me = this;
@@ -254,9 +259,12 @@ var cMAPBUILDER = (function () {
                     if (ctx) {
                         me.mapLayerContexts['layer-' + layerID.toString()] = ctx;
                         ctx.drawImage(img, 0, 0);
+                        me.divs['list_layers'].appendChild(listLayer);
+                        if (!me.activeLayer) {
+                            me.setActiveLayer(layerID);
+                        }
                     }
                 }
-                me.divs['list_layers'].appendChild(listLayer);
             }
         };
         img.onerror = function () {
