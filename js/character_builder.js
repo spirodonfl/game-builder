@@ -120,6 +120,8 @@ var cCHARACTERBUILDER = (function () {
                     img.addEventListener('click', CHARACTERBUILDER.handleImageClick.bind(CHARACTERBUILDER));
                     parent_1.appendChild(img);
                 }
+                // Initialize default image
+                CHARACTERBUILDER.defaultCharacterImage('ym');
             }
         }
         for (var x = 0; x < totalImages; ++x) {
@@ -133,10 +135,12 @@ var cCHARACTERBUILDER = (function () {
                 if (e.target.value === 'ym') {
                     CHARACTERBUILDER.divs['cf_ym'].style.display = 'block';
                     CHARACTERBUILDER.divs['cf_yw'].style.display = 'none';
+                    CHARACTERBUILDER.defaultCharacterImage('ym');
                 }
                 else {
                     CHARACTERBUILDER.divs['cf_ym'].style.display = 'none';
                     CHARACTERBUILDER.divs['cf_yw'].style.display = 'block';
+                    CHARACTERBUILDER.defaultCharacterImage('yw');
                 }
             }
         });
@@ -158,6 +162,45 @@ var cCHARACTERBUILDER = (function () {
                 alert('saved'); // TODO: Proper alert
             }
         });
+    };
+    cCHARACTERBUILDER.prototype.defaultCharacterImage = function (gender) {
+        this.contexts['canvas_character'].clearRect(0, 0, this.canvases['canvas_character'].width, this.canvases['canvas_character'].height);
+        var images = SF.qsa('#character_image_container img');
+        if (images) {
+            for (var m in images) {
+                var img = images[m];
+                if (img instanceof HTMLElement) {
+                    var charImg = img;
+                    charImg.setAttribute('data-include', '0');
+                }
+            }
+        }
+        var defaultImagesToLoad = 3;
+        var defaultImagesLoaded = 0;
+        CHARACTERBUILDER.images['cg_hair_b'].src = 'chargen/image/' + gender + '/hair/back_' + gender + '/none.png';
+        CHARACTERBUILDER.images['cg_hair_b'].setAttribute('data-include', '1');
+        CHARACTERBUILDER.images['cg_hair_b'].onload = function () {
+            ++defaultImagesLoaded;
+            if (defaultImagesLoaded === defaultImagesToLoad) {
+                CHARACTERBUILDER.generateCharacter();
+            }
+        };
+        CHARACTERBUILDER.images['cg_body'].src = 'chargen/image/' + gender + '/body/none.png';
+        CHARACTERBUILDER.images['cg_body'].setAttribute('data-include', '1');
+        CHARACTERBUILDER.images['cg_body'].onload = function () {
+            ++defaultImagesLoaded;
+            if (defaultImagesLoaded === defaultImagesToLoad) {
+                CHARACTERBUILDER.generateCharacter();
+            }
+        };
+        CHARACTERBUILDER.images['cg_hair_f'].src = 'chargen/image/' + gender + '/hair/front_' + gender + '/none.png';
+        CHARACTERBUILDER.images['cg_hair_f'].setAttribute('data-include', '1');
+        CHARACTERBUILDER.images['cg_hair_f'].onload = function () {
+            ++defaultImagesLoaded;
+            if (defaultImagesLoaded === defaultImagesToLoad) {
+                CHARACTERBUILDER.generateCharacter();
+            }
+        };
     };
     cCHARACTERBUILDER.prototype.handleImageClick = function (evt) {
         var target = evt.target; // TODO: Should put proper checks around this
@@ -231,36 +274,39 @@ var cCHARACTERBUILDER = (function () {
             else {
                 backEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'back_' + gender + '/none.png';
             }
-            // TODO: Sometimes these elements do not exist. Don't do anything with them if they don't
-            var middleEl_1 = this.images['cg_' + type + '_m'];
-            middleEl_1.onerror = function () {
-                middleEl_1.setAttribute('data-include', '0');
-                CHARACTERBUILDER.generateCharacter();
-            };
-            middleEl_1.onload = function () {
-                middleEl_1.setAttribute('data-include', '1');
-                CHARACTERBUILDER.generateCharacter();
-            };
-            if (sides[2]) {
-                middleEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/' + index + '_' + color + '.png';
+            if (this.images['cg_' + type + '_m']) {
+                var middleEl_1 = this.images['cg_' + type + '_m'];
+                middleEl_1.onerror = function () {
+                    middleEl_1.setAttribute('data-include', '0');
+                    CHARACTERBUILDER.generateCharacter();
+                };
+                middleEl_1.onload = function () {
+                    middleEl_1.setAttribute('data-include', '1');
+                    CHARACTERBUILDER.generateCharacter();
+                };
+                if (sides[2]) {
+                    middleEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/' + index + '_' + color + '.png';
+                }
+                else {
+                    middleEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/none.png';
+                }
             }
-            else {
-                middleEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'middle_' + gender + '/none.png';
-            }
-            var topEl_1 = this.images['cg_' + type + '_t'];
-            topEl_1.onerror = function () {
-                topEl_1.setAttribute('data-include', '0');
-                CHARACTERBUILDER.generateCharacter();
-            };
-            topEl_1.onload = function () {
-                topEl_1.setAttribute('data-include', '1');
-                CHARACTERBUILDER.generateCharacter();
-            };
-            if (sides[3]) {
-                topEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/' + index + '_' + color + '.png';
-            }
-            else {
-                topEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/none.png';
+            if (this.images['cg_' + type + '_t']) {
+                var topEl_1 = this.images['cg_' + type + '_t'];
+                topEl_1.onerror = function () {
+                    topEl_1.setAttribute('data-include', '0');
+                    CHARACTERBUILDER.generateCharacter();
+                };
+                topEl_1.onload = function () {
+                    topEl_1.setAttribute('data-include', '1');
+                    CHARACTERBUILDER.generateCharacter();
+                };
+                if (sides[3]) {
+                    topEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/' + index + '_' + color + '.png';
+                }
+                else {
+                    topEl_1.src = 'chargen/image/' + gender + '/' + type + '/' + 'top_' + gender + '/none.png';
+                }
             }
         }
     };

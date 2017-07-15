@@ -29,6 +29,14 @@ input[type="text"] {
     font-family: monospace;
     font-size: 14px;
 }
+select {
+    border: 1px solid #8c8c8c;
+    padding: 3px;
+    border-radius: 2px;
+    box-shadow: 1px 1px 4px #c1c1c1;
+    font-family: monospace;
+    font-size: 14px;
+}
 /* NOTE: We depend on nwjs for this to work. If you want to use this style on any other browser other than Chrome, your mileage may vary. */
 input[type="file"]::-webkit-file-upload-button {
     border: 1px solid #717171;
@@ -122,6 +130,7 @@ input[type="file"]::-webkit-file-upload-button:hover { cursor: pointer; }
 }
 #map_builder #canvas_layers canvas#c_active_layer { opacity: 1; }
 
+#character_builder #canvas_character { vertical-align: middle; }
 #character_builder #character_image_container { display: none; }
 #character_builder #character_image_container img { border: 2px solid pink; }
 #character_builder #character_features {
