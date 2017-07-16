@@ -1,5 +1,4 @@
-// TODO: Layers need to be handled smarter. You can't just store an array of length. You also need the individual IDs because you might have skipped IDs if you delete layers.
-// TODO: SERIOUS!!! Also, layer are not loaded in the right order when you load a map.
+// TODO: Add a "show all layers" option so you can see all layers as NOT opaque.
 class cMAPBUILDER implements IMapBuilder {
     private static _instance: cMAPBUILDER;
     public static get Instance() {
@@ -26,6 +25,8 @@ class cMAPBUILDER implements IMapBuilder {
     buttonIDs: Array<string>;
     inputIDs: Array<string>;
     divIDs: Array<string>;
+    loadedLayerIndex: number;
+    loadingPhase: boolean;
 
     initialize() {
         this.ee = new EventEmitter();
@@ -46,6 +47,8 @@ class cMAPBUILDER implements IMapBuilder {
         this.allLayersActive = false;
         this.clearClick = false;
         this.availableMaps = {};
+        this.loadedLayerIndex = 0;
+        this.loadingPhase = false;
         this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
 
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
@@ -138,16 +141,19 @@ class cMAPBUILDER implements IMapBuilder {
         name = name.replace(/\s+/g, '-').toLowerCase();
         for (let ln in this.mapDetails.layerNames) {
             let layerName = this.mapDetails.layerNames[ln];
-            require('fs').unlinkSync('assets/maps/' + name + '-' + layerName + '.png');
+            if (require('fs').existsSync('assets/maps/' + name + '-' + layerName + '.png')) {
+                require('fs').unlinkSync('assets/maps/' + name + '-' + layerName + '.png');
+            }
         }
-        this.mapDetails.layerNames = [];
+        // this.mapDetails.layerNames = [];
         for (let layerName in this.mapLayerCanvases) {
             let layerCanvas = this.mapLayerCanvases[layerName];
             let srcData = layerCanvas.toDataURL();
             srcData = srcData.replace(/^data:image\/(png|jpg);base64,/, "")
             require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64');
-            this.mapDetails.layerNames.push(layerName);
+            // this.mapDetails.layerNames.push(layerName);
         }
+        console.log(this.mapDetails);
         require('fs').writeFileSync('assets/maps/' + name + '.json', JSON.stringify(this.mapDetails), 'utf8');
         if (!this.dbMaps[name]) {
             this.dbMaps[name] = "";
@@ -176,11 +182,8 @@ class cMAPBUILDER implements IMapBuilder {
             this.addNewLayer();
             this.setActiveLayer(0);
         } else {
-            for (let ln in this.mapDetails.layerNames) {
-                let layerName = this.mapDetails.layerNames[ln];
-                let layerID = parseInt(layerName.split('-')[1]);
-                this.addLoadedLayer(layerID);
-            }
+            this.loadingPhase = true;
+            this.loadSingleLayer();
         }
         // Resize mousetrap && existing layers to map details
         HOVERMOUSETRAP.canvasHover.width = this.mapDetails.width * 32;
@@ -221,6 +224,16 @@ class cMAPBUILDER implements IMapBuilder {
 
         // Listen to buttons and inputs
         this.windows['builder'].style.display = 'block';
+    }
+    loadSingleLayer() {
+        if (this.loadedLayerIndex < this.mapDetails.layerNames.length) {
+            let layerName = this.mapDetails.layerNames[this.loadedLayerIndex];
+            let layerID = parseInt(layerName.split('-')[1]);
+            ++this.loadedLayerIndex;
+            this.addLoadedLayer(layerID);
+        } else {
+            this.loadingPhase = false;
+        }
     }
     startOver() {
         window.location.reload();
@@ -286,6 +299,7 @@ class cMAPBUILDER implements IMapBuilder {
                         if (!me.activeLayer) {
                             me.setActiveLayer(layerID);
                         }
+                        me.loadSingleLayer();
                     }
                 }
             }
@@ -330,6 +344,7 @@ class cMAPBUILDER implements IMapBuilder {
                 let ctx = cl.getContext('2d');
                 if (ctx) {
                     this.mapLayerContexts['layer-' + layerID.toString()] = ctx;
+                    this.mapDetails.layerNames.push('layer-' + layerID.toString());
                 }
             }
             this.divs['list_layers'].appendChild(listLayer);
@@ -374,7 +389,18 @@ class cMAPBUILDER implements IMapBuilder {
                 }
             }
         }
-        --this.mapDetails.layers;
+
+        let newLayerNames = [];
+        for (let x = 0; x < this.mapDetails.layerNames.length; ++x) {
+            let layerName = this.mapDetails.layerNames[x];
+            if (layerName === ('layer-' + layerID.toString())) {
+                delete(this.mapDetails.layerNames[x]);
+            } else {
+                newLayerNames.push(layerName);
+            }
+        }
+        this.mapDetails.layerNames = newLayerNames;
+        this.mapDetails.layers = this.mapDetails.layerNames.length;
     }
     switchToPreviousLayer() {
         // TODO: Make this a keyboard shortcut too?
