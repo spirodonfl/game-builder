@@ -1,5 +1,6 @@
 "use strict";
 // TODO: Layers need to be handled smarter. You can't just store an array of length. You also need the individual IDs because you might have skipped IDs if you delete layers.
+// TODO: SERIOUS!!! Also, layer are not loaded in the right order when you load a map.
 var cMAPBUILDER = (function () {
     function cMAPBUILDER() {
     }
@@ -332,7 +333,6 @@ var cMAPBUILDER = (function () {
         }
     };
     cMAPBUILDER.prototype.deleteLayer = function (layerID) {
-        // TODO: Re-structure the layer IDs so you're not just incrementing all the time?
         // TODO: Make this a keyboard shortcut too?
         if (layerID === this.activeLayer && layerID > 0) {
             this.switchToPreviousLayer();
