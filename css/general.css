@@ -120,15 +120,12 @@ input[type="file"]::-webkit-file-upload-button:hover { cursor: pointer; }
     margin-bottom: 10px;
 }
 #map_builder #list_layers .button { margin-left: 10px; }
-#map_builder #list_layers .button#d_active_layer {
+#map_builder #list_layers .button.active-layer {
     color: red;
     border: 1px solid red;
 }
-#map_builder #canvas_layers canvas {
-    position: absolute;
-    opacity: 0.2;
-}
-#map_builder #canvas_layers canvas#c_active_layer { opacity: 1; }
+#map_builder #canvas_layers canvas { position: absolute;  }
+#map_builder #canvas_layers canvas.non-active-layer { opacity: 0.2 }
 
 #character_builder #canvas_character { vertical-align: middle; }
 #character_builder #character_image_container { display: none; }

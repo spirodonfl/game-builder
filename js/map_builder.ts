@@ -10,6 +10,7 @@ class cMAPBUILDER implements IMapBuilder {
     divs: IHashOfHtmlDivElements;
     buttons: IHashOfHtmlButtonElements;
     inputs: IHashOfHtmlInputElements;
+    listItems: IHashOfHtmlLIElements;
     mapDetails: IHashOfMapDetails;
     activeLayer: number;
     mapLayerCanvases: IHashOfHtmlCanvasElements;
@@ -19,6 +20,7 @@ class cMAPBUILDER implements IMapBuilder {
     selectedTileImage: HTMLImageElement;
     dbMaps: basicHash; // TODO: Add to interface?
     availableMaps: basicHash;
+    hideNonActiveLayers: boolean; // TODO: Add to interface?
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -34,6 +36,7 @@ class cMAPBUILDER implements IMapBuilder {
         this.divs = {};
         this.buttons = {};
         this.inputs = {};
+        this.listItems = {};
         this.mapDetails = {
             name: '',
             width: 0,
@@ -60,7 +63,7 @@ class cMAPBUILDER implements IMapBuilder {
             }
         }
 
-        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map'];
+        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map', 'show_hide_layers'];
         for (let b = 0; b < this.buttonIDs.length; ++b) {
             let id = this.buttonIDs[b];
             let elementButton = SF.gei(id);
@@ -192,6 +195,7 @@ class cMAPBUILDER implements IMapBuilder {
         HOVERMOUSETRAP.divMouseTrap.style.height = (this.mapDetails.height * 32) + 'px';
 
         this.buttons['new_layer'].addEventListener('click', this.addNewLayer.bind(this));
+        this.buttons['show_hide_layers'].addEventListener('click', this.showHideLayers.bind(this));
         let me = this;
         this.inputs['choose_tile'].addEventListener('change', function (e) {
             if (e.target instanceof HTMLInputElement) {
@@ -222,8 +226,25 @@ class cMAPBUILDER implements IMapBuilder {
         this.buttons['action_save'].addEventListener('click', this.saveMap.bind(this));
         this.buttons['action_start_over'].addEventListener('click', this.startOver.bind(this));
 
-        // Listen to buttons and inputs
         this.windows['builder'].style.display = 'block';
+        KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f6'], this.toggleBuilderWindow.bind(this));
+    }
+    toggleBuilderWindow() {
+        if (this.windows['builder'].style.display === 'block') {
+            this.windows['builder'].style.display = 'none';
+        } else {
+            this.windows['builder'].style.display = 'block';
+        }
+    }
+    showHideLayers() {
+        if (this.hideNonActiveLayers) {
+            this.hideNonActiveLayers = false;
+            this.buttons['show_hide_layers'].innerHTML = 'Hide Non Active Layers';
+        } else {
+            this.hideNonActiveLayers = true;
+            this.buttons['show_hide_layers'].innerHTML = 'Show All Layers';
+        }
+        this.setActiveLayer(this.activeLayer);
     }
     loadSingleLayer() {
         if (this.loadedLayerIndex < this.mapDetails.layerNames.length) {
@@ -261,24 +282,26 @@ class cMAPBUILDER implements IMapBuilder {
         let img = new Image();
         img.onload = function () {
             let listLayer = SF.ce('li');
-            if (listLayer) {
+            if (listLayer instanceof HTMLLIElement) {
                 listLayer.setAttribute('data-layer', '' + layerID);
                 listLayer.innerHTML = 'Layer ' + layerID;
                 let delBtn = SF.ce('button');
-                if (delBtn) {
-                    delBtn.className = 'button delete-layer';
+                if (delBtn instanceof HTMLButtonElement) {
+                    delBtn.className = 'button';
                     delBtn.setAttribute('data-layer', layerID.toString());
                     delBtn.innerHTML = 'x';
                     listLayer.appendChild(delBtn);
-                    delBtn.addEventListener('click', me.deleteLayerButtonClicked.bind(me));
+                    delBtn.addEventListener('click', me.deleteLayerButtonClicked.bind(me))
+                    me.buttons['delete-layer-' + layerID.toString()] = delBtn;
                 }
                 let actBtn = SF.ce('button');
-                if (actBtn) {
-                    actBtn.className = 'button active-layer';
+                if (actBtn instanceof HTMLButtonElement) {
+                    actBtn.className = 'button';
                     actBtn.setAttribute('data-layer', layerID.toString());
                     actBtn.innerHTML = 'O';
                     listLayer.appendChild(actBtn);
                     actBtn.addEventListener('click', me.activeLayerButtonClicked.bind(me));
+                    me.buttons['activate-layer-' + layerID.toString()] = actBtn;
                 }
                 let canvasLayer = SF.ce('canvas');
                 if (canvasLayer) {
@@ -296,6 +319,7 @@ class cMAPBUILDER implements IMapBuilder {
                         ctx.drawImage(img, 0, 0);
 
                         me.divs['list_layers'].appendChild(listLayer);
+                        me.listItems['layer-' + layerID.toString()] = listLayer;
                         if (!me.activeLayer) {
                             me.setActiveLayer(layerID);
                         }
@@ -312,24 +336,26 @@ class cMAPBUILDER implements IMapBuilder {
     addNewLayer() {
         let layerID = this.mapDetails.layers;
         let listLayer = SF.ce('li');
-        if (listLayer) {
+        if (listLayer instanceof HTMLLIElement) {
             listLayer.setAttribute('data-layer', '' + layerID);
             listLayer.innerHTML = 'Layer ' + layerID;
             let delBtn = SF.ce('button');
-            if (delBtn) {
-                delBtn.className = 'button delete-layer';
+            if (delBtn instanceof HTMLButtonElement) {
+                delBtn.className = 'button';
                 delBtn.setAttribute('data-layer', layerID.toString());
                 delBtn.innerHTML = 'x';
                 listLayer.appendChild(delBtn);
                 delBtn.addEventListener('click', this.deleteLayerButtonClicked.bind(this));
+                this.buttons['delete-layer-' + layerID.toString()] = delBtn;
             }
             let actBtn = SF.ce('button');
-            if (actBtn) {
-                actBtn.className = 'button active-layer';
+            if (actBtn instanceof HTMLButtonElement) {
+                actBtn.className = 'button';
                 actBtn.setAttribute('data-layer', layerID.toString());
                 actBtn.innerHTML = 'O';
                 listLayer.appendChild(actBtn);
                 actBtn.addEventListener('click', this.activeLayerButtonClicked.bind(this));
+                this.buttons['activate-layer-' + layerID.toString()] = actBtn;
             }
             let canvasLayer = SF.ce('canvas');
             if (canvasLayer) {
@@ -345,9 +371,10 @@ class cMAPBUILDER implements IMapBuilder {
                 if (ctx) {
                     this.mapLayerContexts['layer-' + layerID.toString()] = ctx;
                     this.mapDetails.layerNames.push('layer-' + layerID.toString());
+                    this.divs['list_layers'].appendChild(listLayer);
+                    this.listItems['layer-' + layerID.toString()] = listLayer;
                 }
             }
-            this.divs['list_layers'].appendChild(listLayer);
         }
         ++this.mapDetails.layers;
     }
@@ -370,6 +397,7 @@ class cMAPBUILDER implements IMapBuilder {
         }
     }
     deleteLayer(layerID: number) {
+        // TODO: Need to re-arrange layer IDs and update buttons, listitems, canvases and contexts
         // TODO: Make this a keyboard shortcut too?
         if (layerID === this.activeLayer && layerID > 0) {
             this.switchToPreviousLayer();
@@ -379,16 +407,11 @@ class cMAPBUILDER implements IMapBuilder {
         this.mapLayerCanvases['layer-' + layerID].remove();
         delete(this.mapLayerCanvases['layer-' + layerID]);
         delete(this.mapLayerContexts['layer-' + layerID]);
-
-        let toDelete = SF.qsa('[data-layer="' + layerID + '"]');
-        if (toDelete) {
-            for (let del in toDelete) {
-                if (toDelete[del] instanceof HTMLElement) {
-                    toDelete[del].remove();
-                    // TODO: Remove the event listeners?
-                }
-            }
-        }
+        this.buttons['delete-layer-' + layerID].remove();
+        delete(this.buttons['delete-layer-' + layerID]);
+        this.buttons['activate-layer-' + layerID].remove();
+        delete(this.buttons['activate-layer-' + layerID]);
+        this.listItems['layer-' + layerID].remove();
 
         let newLayerNames = [];
         for (let x = 0; x < this.mapDetails.layerNames.length; ++x) {
@@ -404,78 +427,32 @@ class cMAPBUILDER implements IMapBuilder {
     }
     switchToPreviousLayer() {
         // TODO: Make this a keyboard shortcut too?
-        let activeLayerElement = SF.gei('active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
-        activeLayerElement = SF.gei('c_active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
-        activeLayerElement = SF.gei('d_active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
         if (this.activeLayer > 0) {
             --this.activeLayer;
-        }
-        let layerElement = SF.qs('.active-layer[data-layer="' + this.activeLayer + '"]');
-        if (layerElement instanceof HTMLElement) {
-            layerElement.id = 'd_active_layer';
-        }
-        layerElement = SF.qs('canvas[data-layer="' + this.activeLayer + '"]');
-        if (layerElement instanceof HTMLElement) {
-            layerElement.id = 'c_active_layer';
         }
     }
     switchToNextLayer() {
         // TODO: Make this a keyboard shortcut too?
-        let activeLayerElement = SF.gei('active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
-        activeLayerElement = SF.gei('c_active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
-        activeLayerElement = SF.gei('d_active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
         if (this.activeLayer < this.mapDetails.layers) {
             ++this.activeLayer;
         }
-        let layerElement = SF.qs('.active-layer[data-layer="' + this.activeLayer + '"]');
-        if (layerElement instanceof HTMLElement) {
-            layerElement.id = 'd_active_layer';
-        }
-        layerElement = SF.qs('canvas[data-layer="' + this.activeLayer + '"]');
-        if (layerElement instanceof HTMLElement) {
-            layerElement.id = 'c_active_layer';
-        }
     }
     setActiveLayer(layerID: number) {
-        let activeLayerElement = SF.gei('active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
+        for (let b in this.buttons) {
+            if (b.indexOf('delete-layer') || b.indexOf('activate-layer')) {
+                this.buttons[b].classList.remove('active-layer');
+            }
+            if (b === 'activate-layer-' + layerID || b === 'activate-layer-' + layerID) {
+                this.buttons[b].classList.add('active-layer');
+            }
         }
-        activeLayerElement = SF.gei('c_active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
-        }
-        activeLayerElement = SF.gei('d_active_layer');
-        if (activeLayerElement instanceof HTMLElement) {
-            activeLayerElement.id = '';
+        for (let c in this.mapLayerCanvases) {
+            this.mapLayerCanvases[c].classList.remove('non-active-layer');
+            if (c !== 'layer-' + layerID && this.hideNonActiveLayers) {
+                this.mapLayerCanvases[c].classList.add('non-active-layer')
+            }
         }
         this.activeLayer = layerID;
-        let layerElement = SF.qs('.active-layer[data-layer="' + this.activeLayer + '"]');
-        if (layerElement instanceof HTMLElement) {
-            layerElement.id = 'd_active_layer';
-        }
-        layerElement = SF.qs('canvas[data-layer="' + this.activeLayer + '"]');
-        if (layerElement instanceof HTMLElement) {
-            layerElement.id = 'c_active_layer';
-        }
     }
 }
 let MAPBUILDER = cMAPBUILDER.Instance;

@@ -28,6 +28,9 @@ interface IHashOfContexts {
 interface IHashOfHtmlSelectElements {
     [key: string]: HTMLSelectElement;
 }
+interface IHashOfHtmlLIElements {
+    [key: string]: HTMLLIElement;
+}
 interface IHashOfMapDetails {
     name: string;
     width: number;
