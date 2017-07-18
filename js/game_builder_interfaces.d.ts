@@ -52,8 +52,9 @@ interface IMapBuilder {
     // Indicates whether clicking should actually clear the selected area instead of a place a tile there
     clearClick: boolean;
     // If this is false, only the active layer is seen in full strength. The other layers are muted so they're less visible. Makes it easier to distinguish layers.
-    allLayersActive: boolean;
+    muteLayers: boolean;
     selectedTileImage: HTMLImageElement;
+    dbMaps: basicHash;
 
     // Grabs all the windows, buttons, etc..., adds event listeners
     initialize(): void;

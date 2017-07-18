@@ -1,4 +1,6 @@
-// TODO: Add a "show all layers" option so you can see all layers as NOT opaque.
+// TODO: Replace alert function calls with custom alert functionality (once it's built)
+// TODO: Make keyboard shortcuts for switching layers
+// TODO: Make keyboard shortcut for muting inactive layers
 class cMAPBUILDER implements IMapBuilder {
     private static _instance: cMAPBUILDER;
     public static get Instance() {
@@ -16,11 +18,10 @@ class cMAPBUILDER implements IMapBuilder {
     mapLayerCanvases: IHashOfHtmlCanvasElements;
     mapLayerContexts: IHashOfContexts;
     clearClick: boolean;
-    allLayersActive: boolean;
     selectedTileImage: HTMLImageElement;
-    dbMaps: basicHash; // TODO: Add to interface?
+    dbMaps: basicHash;
     availableMaps: basicHash;
-    hideNonActiveLayers: boolean; // TODO: Add to interface?
+    muteLayers: boolean;
 
     // Not in the interface because implementation details might be different
     windowIDs: Array<string>;
@@ -47,7 +48,6 @@ class cMAPBUILDER implements IMapBuilder {
         this.activeLayer = 0;
         this.mapLayerCanvases = {};
         this.mapLayerContexts = {};
-        this.allLayersActive = false;
         this.clearClick = false;
         this.availableMaps = {};
         this.loadedLayerIndex = 0;
@@ -63,7 +63,7 @@ class cMAPBUILDER implements IMapBuilder {
             }
         }
 
-        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map', 'show_hide_layers'];
+        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map', 'mute_layers'];
         for (let b = 0; b < this.buttonIDs.length; ++b) {
             let id = this.buttonIDs[b];
             let elementButton = SF.gei(id);
@@ -162,15 +162,15 @@ class cMAPBUILDER implements IMapBuilder {
             this.dbMaps[name] = "";
             require('fs').writeFileSync('assets/maps.json', JSON.stringify(this.dbMaps), {encoding: 'utf8'});
         }
-        alert('saved'); // TODO: Proper alert
+        alert('saved');
     }
     createNewMap() {
         if (this.inputs['new_map_name'].value === '') {
-            alert('Please enter a name for the new map'); // TODO: Proper alert
+            alert('Please enter a name for the new map');
         } else if (this.inputs['new_map_grid_x'].value === '') {
-            alert('Please enter a width (grid) size for the new map'); // TODO: Proper alert
+            alert('Please enter a width (grid) size for the new map');
         } else if (this.inputs['new_map_grid_y'].value === '') {
-            alert('Please enter a height (grid) size for the new map'); // TODO: Proper alert
+            alert('Please enter a height (grid) size for the new map');
         } else {
             this.mapDetails.width = parseInt(this.inputs['new_map_grid_x'].value);
             this.mapDetails.height = parseInt(this.inputs['new_map_grid_y'].value);
@@ -195,7 +195,7 @@ class cMAPBUILDER implements IMapBuilder {
         HOVERMOUSETRAP.divMouseTrap.style.height = (this.mapDetails.height * 32) + 'px';
 
         this.buttons['new_layer'].addEventListener('click', this.addNewLayer.bind(this));
-        this.buttons['show_hide_layers'].addEventListener('click', this.showHideLayers.bind(this));
+        this.buttons['mute_layers'].addEventListener('click', this.showHideLayers.bind(this));
         let me = this;
         this.inputs['choose_tile'].addEventListener('change', function (e) {
             if (e.target instanceof HTMLInputElement) {
@@ -237,12 +237,12 @@ class cMAPBUILDER implements IMapBuilder {
         }
     }
     showHideLayers() {
-        if (this.hideNonActiveLayers) {
-            this.hideNonActiveLayers = false;
-            this.buttons['show_hide_layers'].innerHTML = 'Hide Non Active Layers';
+        if (this.muteLayers) {
+            this.muteLayers = false;
+            this.buttons['mute_layers'].innerHTML = 'Mute Layers';
         } else {
-            this.hideNonActiveLayers = true;
-            this.buttons['show_hide_layers'].innerHTML = 'Show All Layers';
+            this.muteLayers = true;
+            this.buttons['mute_layers'].innerHTML = 'Unmute Layers';
         }
         this.setActiveLayer(this.activeLayer);
     }
@@ -386,6 +386,7 @@ class cMAPBUILDER implements IMapBuilder {
                 this.deleteLayer(numericalID);
             }
         }
+        // TODO: Re-arrange the layers now
     }
     activeLayerButtonClicked(e: Event) {
         if (e.target && e.target instanceof HTMLElement) {
@@ -397,8 +398,6 @@ class cMAPBUILDER implements IMapBuilder {
         }
     }
     deleteLayer(layerID: number) {
-        // TODO: Need to re-arrange layer IDs and update buttons, listitems, canvases and contexts
-        // TODO: Make this a keyboard shortcut too?
         if (layerID === this.activeLayer && layerID > 0) {
             this.switchToPreviousLayer();
         } else {
@@ -426,13 +425,11 @@ class cMAPBUILDER implements IMapBuilder {
         this.mapDetails.layers = this.mapDetails.layerNames.length;
     }
     switchToPreviousLayer() {
-        // TODO: Make this a keyboard shortcut too?
         if (this.activeLayer > 0) {
             --this.activeLayer;
         }
     }
     switchToNextLayer() {
-        // TODO: Make this a keyboard shortcut too?
         if (this.activeLayer < this.mapDetails.layers) {
             ++this.activeLayer;
         }
@@ -448,7 +445,7 @@ class cMAPBUILDER implements IMapBuilder {
         }
         for (let c in this.mapLayerCanvases) {
             this.mapLayerCanvases[c].classList.remove('non-active-layer');
-            if (c !== 'layer-' + layerID && this.hideNonActiveLayers) {
+            if (c !== 'layer-' + layerID && this.muteLayers) {
                 this.mapLayerCanvases[c].classList.add('non-active-layer')
             }
         }
