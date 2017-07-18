@@ -36,3 +36,5 @@ Assets will end up being saved in the "assets" folder. Specifically named folder
 ## What this will not do
 
 One thing this will not do is give you a merged, flat, output of a map if you have multiple layers. It will spit out each layer as an individual PNG file. It's up to you to merge it into a flat file if that's what you need. I may add the feature to include a flattened map in the future.
+
+# License - Please refer to the LICENSE file in this repo.
