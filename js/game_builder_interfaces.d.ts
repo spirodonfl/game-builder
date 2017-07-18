@@ -7,9 +7,9 @@ interface IHashOfHtmlImageElements {
 interface IHashOfSides {
     [key: string]: Array<string>;
 }
-interface IHashOfHtmlElements {
-    [key: string]: HTMLElement;
-}
+// interface IHashOfHtmlElements {
+//     [key: string]: HTMLElement;
+// }
 interface IHashOfHtmlDivElements {
     [key: string]: HTMLDivElement;
 }
@@ -28,9 +28,9 @@ interface IHashOfContexts {
 interface IHashOfHtmlSelectElements {
     [key: string]: HTMLSelectElement;
 }
-interface IHashOfHtmlLIElements {
-    [key: string]: HTMLLIElement;
-}
+// interface IHashOfHtmlLIElements {
+//     [key: string]: HTMLLIElement;
+// }
 interface IHashOfMapDetails {
     name: string;
     width: number;
@@ -48,6 +48,10 @@ interface IMapBuilder {
     mapDetails: IHashOfMapDetails;
     mapLayerCanvases: Array<HTMLCanvasElement>;
     mapLayerContexts: Array<CanvasRenderingContext2D>;
+    layerListItems: Array<HTMLLIElement>;
+    layerDeleteButtons: Array<HTMLButtonElement>;
+    layerActivateButtons: Array<HTMLButtonElement>;
+    layerSpans: Array<HTMLSpanElement>;
     activeLayer: number;
     // Indicates whether clicking should actually clear the selected area instead of a place a tile there
     clearClick: boolean;

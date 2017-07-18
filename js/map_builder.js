@@ -1,7 +1,7 @@
 "use strict";
 // TODO: Replace alert function calls with custom alert functionality (once it's built)
-// TODO: Make keyboard shortcuts for switching layers
-// TODO: Make keyboard shortcut for muting inactive layers
+// TODO: Make keyboard shortcuts for switching layers (show a simple popup to indicate layer you're on)
+// TODO: Make keyboard shortcut for muting inactive layers (show a simple popup to indicate action taken)
 var cMAPBUILDER = (function () {
     function cMAPBUILDER() {
     }
