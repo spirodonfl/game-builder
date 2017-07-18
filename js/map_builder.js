@@ -36,59 +36,59 @@ var cMAPBUILDER = (function () {
         this.layerActivateButtons = [];
         this.layerListItems = [];
         this.layerSpans = [];
-        this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', { encoding: 'utf8' })); // TODO: Error out if this does not exist or create a blank one
-        this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
-        for (var w = 0; w < this.windowIDs.length; ++w) {
-            var id = this.windowIDs[w];
-            var elementWindow = SF.gei(id);
-            if (elementWindow instanceof HTMLElement) {
-                this.windows[id] = elementWindow;
+        if (require('fs').existsSync('assets/maps.json')) {
+            this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', { encoding: 'utf8' }));
+            this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
+            for (var w = 0; w < this.windowIDs.length; ++w) {
+                var id = this.windowIDs[w];
+                var elementWindow = SF.gei(id);
+                if (elementWindow instanceof HTMLElement) {
+                    this.windows[id] = elementWindow;
+                }
             }
+            this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'load_map', 'mute_layers'];
+            for (var b = 0; b < this.buttonIDs.length; ++b) {
+                var id = this.buttonIDs[b];
+                var elementButton = SF.gei(id);
+                if (elementButton instanceof HTMLElement) {
+                    this.buttons[id] = elementButton;
+                }
+            }
+            this.inputIDs = ['new_map_name', 'new_map_grid_x', 'new_map_grid_y', 'choose_tile', 'load_map_file'];
+            for (var i = 0; i < this.inputIDs.length; ++i) {
+                var id = this.inputIDs[i];
+                var elementInput = SF.gei(id);
+                if (elementInput instanceof HTMLElement) {
+                    this.inputs[id] = elementInput;
+                }
+            }
+            this.divIDs = ['list_layers', 'canvas_layers'];
+            for (var i = 0; i < this.divIDs.length; ++i) {
+                var id = this.divIDs[i];
+                var elementDiv = SF.gei(id);
+                if (elementDiv instanceof HTMLElement) {
+                    this.divs[id] = elementDiv;
+                }
+            }
+            var ti = SF.gei('tile_preview_image');
+            if (ti instanceof HTMLElement) {
+                this.selectedTileImage = ti;
+            }
+            this.buttons['choose_new_map'].addEventListener('click', this.choseNewMap.bind(this));
+            this.buttons['choose_load_map'].addEventListener('click', this.choseLoadMap.bind(this));
+            this.buttons['create_map'].addEventListener('click', this.createNewMap.bind(this));
+            this.buttons['load_map'].addEventListener('click', this.loadMap.bind(this));
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f7'], function () {
+                HOVERMOUSETRAP.stickyGrid = !HOVERMOUSETRAP.stickyGrid;
+            });
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f8'], this.toggleClearClick.bind(this));
+            HOVERMOUSETRAP.drawMove = true;
+            HOVERMOUSETRAP.initialize();
+            this.start();
         }
-        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map', 'mute_layers'];
-        for (var b = 0; b < this.buttonIDs.length; ++b) {
-            var id = this.buttonIDs[b];
-            var elementButton = SF.gei(id);
-            if (elementButton instanceof HTMLElement) {
-                this.buttons[id] = elementButton;
-            }
+        else {
+            alert('No maps DB file found!');
         }
-        this.inputIDs = ['new_map_name', 'new_map_grid_x', 'new_map_grid_y', 'choose_tile', 'load_map_file'];
-        for (var i = 0; i < this.inputIDs.length; ++i) {
-            var id = this.inputIDs[i];
-            var elementInput = SF.gei(id);
-            if (elementInput instanceof HTMLElement) {
-                this.inputs[id] = elementInput;
-            }
-        }
-        this.divIDs = ['list_layers', 'canvas_layers'];
-        for (var i = 0; i < this.divIDs.length; ++i) {
-            var id = this.divIDs[i];
-            var elementDiv = SF.gei(id);
-            if (elementDiv instanceof HTMLElement) {
-                this.divs[id] = elementDiv;
-            }
-        }
-        var ti = SF.gei('tile_preview_image');
-        if (ti instanceof HTMLElement) {
-            this.selectedTileImage = ti;
-        }
-        this.buttons['choose_new_map'].addEventListener('click', this.choseNewMap.bind(this));
-        this.buttons['choose_load_map'].addEventListener('click', this.choseLoadMap.bind(this));
-        this.buttons['create_map'].addEventListener('click', this.createNewMap.bind(this));
-        this.buttons['load_map'].addEventListener('click', this.loadMap.bind(this));
-        KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f7'], function () {
-            if (HOVERMOUSETRAP.stickyGrid) {
-                HOVERMOUSETRAP.stickyGrid = false;
-            }
-            else {
-                HOVERMOUSETRAP.stickyGrid = true;
-            }
-        });
-        KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f8'], this.toggleClearClick.bind(this));
-        HOVERMOUSETRAP.drawMove = true;
-        HOVERMOUSETRAP.initialize();
-        this.start();
     };
     cMAPBUILDER.prototype.choseLoadMap = function () {
         this.hideAllWindows();
@@ -106,12 +106,7 @@ var cMAPBUILDER = (function () {
         }
     };
     cMAPBUILDER.prototype.toggleClearClick = function () {
-        if (this.clearClick) {
-            this.clearClick = false;
-        }
-        else {
-            this.clearClick = true;
-        }
+        this.clearClick = !this.clearClick;
     };
     cMAPBUILDER.prototype.choseNewMap = function () {
         this.hideAllWindows();
@@ -201,7 +196,6 @@ var cMAPBUILDER = (function () {
             }
         });
         this.buttons['action_save'].addEventListener('click', this.saveMap.bind(this));
-        this.buttons['action_start_over'].addEventListener('click', this.startOver.bind(this));
         this.windows['builder'].style.display = 'block';
         KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f6'], this.toggleBuilderWindow.bind(this));
     };
@@ -234,9 +228,6 @@ var cMAPBUILDER = (function () {
             }
             this.loadingPhase = false;
         }
-    };
-    cMAPBUILDER.prototype.startOver = function () {
-        window.location.reload();
     };
     cMAPBUILDER.prototype.hideAllWindows = function () {
         for (var w = 0; w < this.windowIDs.length; ++w) {

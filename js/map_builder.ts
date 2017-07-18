@@ -58,66 +58,66 @@ class cMAPBUILDER implements IMapBuilder {
         this.layerActivateButtons = [];
         this.layerListItems = [];
         this.layerSpans = [];
-        this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
+        if (require('fs').existsSync('assets/maps.json')) {
+            this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', {encoding: 'utf8'}));
 
-        this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
-        for (let w = 0; w < this.windowIDs.length; ++w) {
-            let id = this.windowIDs[w];
-            let elementWindow = SF.gei(id);
-            if (elementWindow instanceof HTMLElement) {
-                this.windows[id] = <HTMLDivElement>elementWindow;
+            this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
+            for (let w = 0; w < this.windowIDs.length; ++w) {
+                let id = this.windowIDs[w];
+                let elementWindow = SF.gei(id);
+                if (elementWindow instanceof HTMLElement) {
+                    this.windows[id] = <HTMLDivElement>elementWindow;
+                }
             }
-        }
 
-        this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'action_start_over', 'load_map', 'mute_layers'];
-        for (let b = 0; b < this.buttonIDs.length; ++b) {
-            let id = this.buttonIDs[b];
-            let elementButton = SF.gei(id);
-            if (elementButton instanceof HTMLElement) {
-                this.buttons[id] = <HTMLButtonElement>elementButton;
+            this.buttonIDs = ['choose_new_map', 'choose_load_map', 'create_map', 'new_layer', 'action_save', 'load_map', 'mute_layers'];
+            for (let b = 0; b < this.buttonIDs.length; ++b) {
+                let id = this.buttonIDs[b];
+                let elementButton = SF.gei(id);
+                if (elementButton instanceof HTMLElement) {
+                    this.buttons[id] = <HTMLButtonElement>elementButton;
+                }
             }
-        }
 
-        this.inputIDs = ['new_map_name', 'new_map_grid_x', 'new_map_grid_y', 'choose_tile', 'load_map_file'];
-        for (let i = 0; i < this.inputIDs.length; ++i) {
-            let id = this.inputIDs[i];
-            let elementInput = SF.gei(id);
-            if (elementInput instanceof HTMLElement) {
-                this.inputs[id] = <HTMLInputElement>elementInput;
+            this.inputIDs = ['new_map_name', 'new_map_grid_x', 'new_map_grid_y', 'choose_tile', 'load_map_file'];
+            for (let i = 0; i < this.inputIDs.length; ++i) {
+                let id = this.inputIDs[i];
+                let elementInput = SF.gei(id);
+                if (elementInput instanceof HTMLElement) {
+                    this.inputs[id] = <HTMLInputElement>elementInput;
+                }
             }
-        }
 
-        this.divIDs = ['list_layers', 'canvas_layers'];
-        for (let i = 0; i < this.divIDs.length; ++i) {
-            let id = this.divIDs[i];
-            let elementDiv = SF.gei(id);
-            if (elementDiv instanceof HTMLElement) {
-                this.divs[id] = <HTMLDivElement>elementDiv;
+            this.divIDs = ['list_layers', 'canvas_layers'];
+            for (let i = 0; i < this.divIDs.length; ++i) {
+                let id = this.divIDs[i];
+                let elementDiv = SF.gei(id);
+                if (elementDiv instanceof HTMLElement) {
+                    this.divs[id] = <HTMLDivElement>elementDiv;
+                }
             }
-        }
 
-        let ti = SF.gei('tile_preview_image');
-        if (ti instanceof HTMLElement) {
-            this.selectedTileImage = <HTMLImageElement>ti;
-        }
-
-        this.buttons['choose_new_map'].addEventListener('click', this.choseNewMap.bind(this));
-        this.buttons['choose_load_map'].addEventListener('click', this.choseLoadMap.bind(this));
-        this.buttons['create_map'].addEventListener('click', this.createNewMap.bind(this));
-        this.buttons['load_map'].addEventListener('click', this.loadMap.bind(this));
-
-        KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f7'], function () {
-            if (HOVERMOUSETRAP.stickyGrid) {
-                HOVERMOUSETRAP.stickyGrid = false;
-            } else {
-                HOVERMOUSETRAP.stickyGrid = true;
+            let ti = SF.gei('tile_preview_image');
+            if (ti instanceof HTMLElement) {
+                this.selectedTileImage = <HTMLImageElement>ti;
             }
-        });
-        KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f8'], this.toggleClearClick.bind(this));
-        HOVERMOUSETRAP.drawMove = true;
-        HOVERMOUSETRAP.initialize();
 
-        this.start();
+            this.buttons['choose_new_map'].addEventListener('click', this.choseNewMap.bind(this));
+            this.buttons['choose_load_map'].addEventListener('click', this.choseLoadMap.bind(this));
+            this.buttons['create_map'].addEventListener('click', this.createNewMap.bind(this));
+            this.buttons['load_map'].addEventListener('click', this.loadMap.bind(this));
+
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f7'], function() {
+                HOVERMOUSETRAP.stickyGrid = !HOVERMOUSETRAP.stickyGrid
+            });
+            KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f8'], this.toggleClearClick.bind(this));
+            HOVERMOUSETRAP.drawMove = true;
+            HOVERMOUSETRAP.initialize();
+
+            this.start();
+        } else {
+            alert('No maps DB file found!');
+        }
     }
     choseLoadMap() {
         this.hideAllWindows();
@@ -135,11 +135,7 @@ class cMAPBUILDER implements IMapBuilder {
         }
     }
     toggleClearClick() {
-        if (this.clearClick) {
-            this.clearClick = false;
-        } else {
-            this.clearClick = true;
-        }
+        this.clearClick = !this.clearClick
     }
     choseNewMap() {
         this.hideAllWindows();
@@ -227,7 +223,6 @@ class cMAPBUILDER implements IMapBuilder {
         });
 
         this.buttons['action_save'].addEventListener('click', this.saveMap.bind(this));
-        this.buttons['action_start_over'].addEventListener('click', this.startOver.bind(this));
 
         this.windows['builder'].style.display = 'block';
         KEYBOARD.ee.on('KU:' + KEYBOARD.IDs['f6'], this.toggleBuilderWindow.bind(this));
@@ -258,9 +253,6 @@ class cMAPBUILDER implements IMapBuilder {
             }
             this.loadingPhase = false;
         }
-    }
-    startOver() {
-        window.location.reload();
     }
     hideAllWindows() {
         for (let w = 0; w < this.windowIDs.length; ++w) {
