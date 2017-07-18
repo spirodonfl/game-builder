@@ -270,6 +270,7 @@ class cMAPBUILDER implements IMapBuilder {
     loadMap() {
         let path = 'assets/maps/' + this.inputs['load_map_file'].value + '.json';
         this.mapDetails = JSON.parse(require('fs').readFileSync(path, {encoding: 'utf8'}));
+        this.hideAllWindows();
         this.initializeBuilder(false);
     }
     addLoadedLayer(layerID: number) {
