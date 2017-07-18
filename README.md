@@ -27,4 +27,12 @@ On the tile builder page, you can use F6 to hide or show the main window and F7 
 
 On the character builder page, there are no special keyboard shortcuts other than two global ones.
 
-One the map builder page, you can use F6 to hide or show the main window, F7 to enable sticky grid hover / mouse actions and F8 to clear tiles instead of place them on the map. 
+One the map builder page, you can use F6 to hide or show the main window, F7 to enable sticky grid hover / mouse actions and F8 to clear tiles instead of place them on the map.
+
+## Assets
+
+Assets will end up being saved in the "assets" folder. Specifically named folders exist for each type of asset and you mostly generate PNG files. Some assets (like maps) will generate JSON files along with the PNG files. It's up to you if they are useful or not.
+
+## What this will not do
+
+One thing this will not do is give you a merged, flat, output of a map if you have multiple layers. It will spit out each layer as an individual PNG file. It's up to you to merge it into a flat file if that's what you need. I may add the feature to include a flattened map in the future.
