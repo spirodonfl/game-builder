@@ -46,8 +46,8 @@ interface IMapBuilder {
     inputs: IHashOfHtmlInputElements;
     // Represents the loaded map details
     mapDetails: IHashOfMapDetails;
-    mapLayerCanvases: IHashOfMapLayerCanvases;
-    mapLayerContexts: IHashOfMapLayerContexts;
+    mapLayerCanvases: Array<HTMLCanvasElement>;
+    mapLayerContexts: Array<CanvasRenderingContext2D>;
     activeLayer: number;
     // Indicates whether clicking should actually clear the selected area instead of a place a tile there
     clearClick: boolean;

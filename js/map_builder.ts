@@ -12,11 +12,14 @@ class cMAPBUILDER implements IMapBuilder {
     divs: IHashOfHtmlDivElements;
     buttons: IHashOfHtmlButtonElements;
     inputs: IHashOfHtmlInputElements;
-    listItems: IHashOfHtmlLIElements;
+    layerListItems: Array<HTMLLIElement>;
+    layerDeleteButtons: Array<HTMLButtonElement>;
+    layerActivateButtons: Array<HTMLButtonElement>;
+    layerSpans: Array<HTMLSpanElement>;
     mapDetails: IHashOfMapDetails;
     activeLayer: number;
-    mapLayerCanvases: IHashOfHtmlCanvasElements;
-    mapLayerContexts: IHashOfContexts;
+    mapLayerCanvases: Array<HTMLCanvasElement>;
+    mapLayerContexts: Array<CanvasRenderingContext2D>;
     clearClick: boolean;
     selectedTileImage: HTMLImageElement;
     dbMaps: basicHash;
@@ -37,7 +40,6 @@ class cMAPBUILDER implements IMapBuilder {
         this.divs = {};
         this.buttons = {};
         this.inputs = {};
-        this.listItems = {};
         this.mapDetails = {
             name: '',
             width: 0,
@@ -46,12 +48,16 @@ class cMAPBUILDER implements IMapBuilder {
             layerNames: []
         }
         this.activeLayer = 0;
-        this.mapLayerCanvases = {};
-        this.mapLayerContexts = {};
+        this.mapLayerCanvases = [];
+        this.mapLayerContexts = [];
         this.clearClick = false;
         this.availableMaps = {};
         this.loadedLayerIndex = 0;
         this.loadingPhase = false;
+        this.layerDeleteButtons = [];
+        this.layerActivateButtons = [];
+        this.layerListItems = [];
+        this.layerSpans = [];
         this.dbMaps = JSON.parse(require('fs').readFileSync('assets/maps.json', {encoding: 'utf8'})); // TODO: Error out if this does not exist or create a blank one
 
         this.windowIDs = ['choose', 'new_map_form', 'load_map_form', 'builder'];
@@ -142,21 +148,18 @@ class cMAPBUILDER implements IMapBuilder {
     saveMap() {
         let name = this.mapDetails.name;
         name = name.replace(/\s+/g, '-').toLowerCase();
-        for (let ln in this.mapDetails.layerNames) {
-            let layerName = this.mapDetails.layerNames[ln];
-            if (require('fs').existsSync('assets/maps/' + name + '-' + layerName + '.png')) {
-                require('fs').unlinkSync('assets/maps/' + name + '-' + layerName + '.png');
+        // NOTE: There's probably a smarter way to do this but, in reality, we max out at 100 layers so this is fine for now.
+        for (let x = 0; x <= 100; ++x) {
+            if (require('fs').existsSync('assets/maps/' + name + '-' + x.toString() + '.png')) {
+                require('fs').unlinkSync('assets/maps/' + name + '-' + x.toString() + '.png');
             }
         }
-        // this.mapDetails.layerNames = [];
-        for (let layerName in this.mapLayerCanvases) {
-            let layerCanvas = this.mapLayerCanvases[layerName];
-            let srcData = layerCanvas.toDataURL();
+        for (let l = 0; l < this.mapDetails.layers; ++l) {
+            let cnv = this.mapLayerCanvases[l];
+            let srcData = cnv.toDataURL();
             srcData = srcData.replace(/^data:image\/(png|jpg);base64,/, "")
-            require('fs').writeFileSync('assets/maps/' + name + '-' + layerName + '.png', srcData, 'base64');
-            // this.mapDetails.layerNames.push(layerName);
+            require('fs').writeFileSync('assets/maps/' + name + '-' + l.toString() + '.png', srcData, 'base64');
         }
-        console.log(this.mapDetails);
         require('fs').writeFileSync('assets/maps/' + name + '.json', JSON.stringify(this.mapDetails), 'utf8');
         if (!this.dbMaps[name]) {
             this.dbMaps[name] = "";
@@ -208,17 +211,17 @@ class cMAPBUILDER implements IMapBuilder {
         });
         HOVERMOUSETRAP.ee.on('Mouse Move', function(x, y) {
             if (me.selectedTileImage.src !== '' && HOVERMOUSETRAP.clickDown) {
-                me.mapLayerContexts['layer-' + me.activeLayer].clearRect(x, y, 32, 32);
+                me.mapLayerContexts[me.activeLayer].clearRect(x, y, 32, 32);
                 if (!me.clearClick) {
-                    me.mapLayerContexts['layer-' + me.activeLayer].drawImage(me.selectedTileImage, x, y);
+                    me.mapLayerContexts[me.activeLayer].drawImage(me.selectedTileImage, x, y);
                 }
             }
         });
         HOVERMOUSETRAP.ee.on('Mouse Up', function(x, y) {
             if (me.selectedTileImage.src !== '') {
-                me.mapLayerContexts['layer-' + me.activeLayer].clearRect(x, y, 32, 32);
+                me.mapLayerContexts[me.activeLayer].clearRect(x, y, 32, 32);
                 if (!me.clearClick) {
-                    me.mapLayerContexts['layer-' + me.activeLayer].drawImage(me.selectedTileImage, x, y);
+                    me.mapLayerContexts[me.activeLayer].drawImage(me.selectedTileImage, x, y);
                 }
             }
         });
@@ -247,12 +250,12 @@ class cMAPBUILDER implements IMapBuilder {
         this.setActiveLayer(this.activeLayer);
     }
     loadSingleLayer() {
-        if (this.loadedLayerIndex < this.mapDetails.layerNames.length) {
-            let layerName = this.mapDetails.layerNames[this.loadedLayerIndex];
-            let layerID = parseInt(layerName.split('-')[1]);
-            ++this.loadedLayerIndex;
-            this.addLoadedLayer(layerID);
+        if (this.loadedLayerIndex < this.mapDetails.layers) {
+            this.addLoadedLayer(this.loadedLayerIndex);
         } else {
+            if (!this.activeLayer) {
+                this.setActiveLayer(0);
+            }
             this.loadingPhase = false;
         }
     }
@@ -284,7 +287,12 @@ class cMAPBUILDER implements IMapBuilder {
             let listLayer = SF.ce('li');
             if (listLayer instanceof HTMLLIElement) {
                 listLayer.setAttribute('data-layer', '' + layerID);
-                listLayer.innerHTML = 'Layer ' + layerID;
+                let llSpan = SF.ce('span');
+                if (llSpan instanceof HTMLSpanElement) {
+                    llSpan.innerHTML = 'Layer ' + layerID;
+                    listLayer.appendChild(llSpan);
+                    me.layerSpans.push(llSpan);
+                }
                 let delBtn = SF.ce('button');
                 if (delBtn instanceof HTMLButtonElement) {
                     delBtn.className = 'button';
@@ -292,7 +300,7 @@ class cMAPBUILDER implements IMapBuilder {
                     delBtn.innerHTML = 'x';
                     listLayer.appendChild(delBtn);
                     delBtn.addEventListener('click', me.deleteLayerButtonClicked.bind(me))
-                    me.buttons['delete-layer-' + layerID.toString()] = delBtn;
+                    me.layerDeleteButtons.push(delBtn);
                 }
                 let actBtn = SF.ce('button');
                 if (actBtn instanceof HTMLButtonElement) {
@@ -301,7 +309,7 @@ class cMAPBUILDER implements IMapBuilder {
                     actBtn.innerHTML = 'O';
                     listLayer.appendChild(actBtn);
                     actBtn.addEventListener('click', me.activeLayerButtonClicked.bind(me));
-                    me.buttons['activate-layer-' + layerID.toString()] = actBtn;
+                    me.layerActivateButtons.push(actBtn);
                 }
                 let canvasLayer = SF.ce('canvas');
                 if (canvasLayer) {
@@ -312,33 +320,36 @@ class cMAPBUILDER implements IMapBuilder {
                     cl.style.zIndex = layerID.toString();
                     cl.setAttribute('data-layer', layerID.toString());
                     me.divs['canvas_layers'].appendChild(cl);
-                    me.mapLayerCanvases['layer-' + layerID.toString()] = cl;
+                    me.mapLayerCanvases.push(cl);
                     let ctx = cl.getContext('2d');
                     if (ctx) {
-                        me.mapLayerContexts['layer-' + layerID.toString()] = ctx;
+                        me.mapLayerContexts.push(ctx);
                         ctx.drawImage(img, 0, 0);
 
                         me.divs['list_layers'].appendChild(listLayer);
-                        me.listItems['layer-' + layerID.toString()] = listLayer;
-                        if (!me.activeLayer) {
-                            me.setActiveLayer(layerID);
-                        }
+                        me.layerListItems.push(listLayer);
+                        ++me.loadedLayerIndex;
                         me.loadSingleLayer();
                     }
                 }
             }
         }
         img.onerror = function () {
-            alert('Layer image did not load'); // TODO: proper alert
+            alert('Layer image did not load');
         }
-        img.src = 'assets/maps/' + this.mapDetails.name + '-layer-' + layerID + '.png';
+        img.src = 'assets/maps/' + this.mapDetails.name + '-' + layerID + '.png';
     }
     addNewLayer() {
         let layerID = this.mapDetails.layers;
         let listLayer = SF.ce('li');
         if (listLayer instanceof HTMLLIElement) {
             listLayer.setAttribute('data-layer', '' + layerID);
-            listLayer.innerHTML = 'Layer ' + layerID;
+            let llSpan = SF.ce('span');
+            if (llSpan instanceof HTMLSpanElement) {
+                llSpan.innerHTML = 'Layer ' + layerID;
+                listLayer.appendChild(llSpan);
+                this.layerSpans.push(llSpan);
+            }
             let delBtn = SF.ce('button');
             if (delBtn instanceof HTMLButtonElement) {
                 delBtn.className = 'button';
@@ -346,7 +357,7 @@ class cMAPBUILDER implements IMapBuilder {
                 delBtn.innerHTML = 'x';
                 listLayer.appendChild(delBtn);
                 delBtn.addEventListener('click', this.deleteLayerButtonClicked.bind(this));
-                this.buttons['delete-layer-' + layerID.toString()] = delBtn;
+                this.layerDeleteButtons.push(delBtn);
             }
             let actBtn = SF.ce('button');
             if (actBtn instanceof HTMLButtonElement) {
@@ -356,6 +367,7 @@ class cMAPBUILDER implements IMapBuilder {
                 listLayer.appendChild(actBtn);
                 actBtn.addEventListener('click', this.activeLayerButtonClicked.bind(this));
                 this.buttons['activate-layer-' + layerID.toString()] = actBtn;
+                this.layerActivateButtons.push(actBtn);
             }
             let canvasLayer = SF.ce('canvas');
             if (canvasLayer) {
@@ -366,13 +378,12 @@ class cMAPBUILDER implements IMapBuilder {
                 cl.style.zIndex = layerID.toString();
                 cl.setAttribute('data-layer', layerID.toString());
                 this.divs['canvas_layers'].appendChild(cl);
-                this.mapLayerCanvases['layer-' + layerID.toString()] = cl;
+                this.mapLayerCanvases.push(cl);
                 let ctx = cl.getContext('2d');
                 if (ctx) {
-                    this.mapLayerContexts['layer-' + layerID.toString()] = ctx;
-                    this.mapDetails.layerNames.push('layer-' + layerID.toString());
+                    this.mapLayerContexts.push(ctx);
                     this.divs['list_layers'].appendChild(listLayer);
-                    this.listItems['layer-' + layerID.toString()] = listLayer;
+                    this.layerListItems.push(listLayer);
                 }
             }
         }
@@ -384,9 +395,15 @@ class cMAPBUILDER implements IMapBuilder {
             if (layerID) {
                 let numericalID = parseInt(layerID);
                 this.deleteLayer(numericalID);
+                for (let l = 0; l < this.mapDetails.layers; ++l) {
+                    this.mapLayerCanvases[l].style.zIndex = l.toString();
+                    this.mapLayerCanvases[l].setAttribute('data-layer', l.toString());
+                    this.layerSpans[l].innerHTML = 'Layer ' + l.toString();
+                    this.layerDeleteButtons[l].setAttribute('data-layer', l.toString());
+                    this.layerActivateButtons[l].setAttribute('data-layer', l.toString());
+                }
             }
         }
-        // TODO: Re-arrange the layers now
     }
     activeLayerButtonClicked(e: Event) {
         if (e.target && e.target instanceof HTMLElement) {
@@ -403,26 +420,18 @@ class cMAPBUILDER implements IMapBuilder {
         } else {
             this.switchToNextLayer();
         }
-        this.mapLayerCanvases['layer-' + layerID].remove();
-        delete(this.mapLayerCanvases['layer-' + layerID]);
-        delete(this.mapLayerContexts['layer-' + layerID]);
-        this.buttons['delete-layer-' + layerID].remove();
-        delete(this.buttons['delete-layer-' + layerID]);
-        this.buttons['activate-layer-' + layerID].remove();
-        delete(this.buttons['activate-layer-' + layerID]);
-        this.listItems['layer-' + layerID].remove();
-
-        let newLayerNames = [];
-        for (let x = 0; x < this.mapDetails.layerNames.length; ++x) {
-            let layerName = this.mapDetails.layerNames[x];
-            if (layerName === ('layer-' + layerID.toString())) {
-                delete(this.mapDetails.layerNames[x]);
-            } else {
-                newLayerNames.push(layerName);
-            }
-        }
-        this.mapDetails.layerNames = newLayerNames;
-        this.mapDetails.layers = this.mapDetails.layerNames.length;
+        this.mapLayerCanvases[layerID].remove();
+        this.mapLayerCanvases.splice(layerID, 1);
+        this.mapLayerContexts.splice(layerID, 1);
+        this.layerDeleteButtons[layerID].remove();
+        this.layerDeleteButtons.splice(layerID, 1);
+        this.layerActivateButtons[layerID].remove();
+        this.layerActivateButtons.splice(layerID, 1);
+        this.layerSpans[layerID].remove();
+        this.layerSpans.splice(layerID, 1);
+        this.layerListItems[layerID].remove();
+        this.layerListItems.splice(layerID, 1);
+        --this.mapDetails.layers;
     }
     switchToPreviousLayer() {
         if (this.activeLayer > 0) {
@@ -435,18 +444,16 @@ class cMAPBUILDER implements IMapBuilder {
         }
     }
     setActiveLayer(layerID: number) {
-        for (let b in this.buttons) {
-            if (b.indexOf('delete-layer') || b.indexOf('activate-layer')) {
-                this.buttons[b].classList.remove('active-layer');
+        for (let b = 0; b < this.mapDetails.layers; ++b ) {
+            this.layerDeleteButtons[b].classList.remove('active-layer');
+            this.layerActivateButtons[b].classList.remove('active-layer');
+            if (b === layerID) {
+                this.layerDeleteButtons[b].classList.add('active-layer');
+                this.layerActivateButtons[b].classList.add('active-layer');
             }
-            if (b === 'activate-layer-' + layerID || b === 'activate-layer-' + layerID) {
-                this.buttons[b].classList.add('active-layer');
-            }
-        }
-        for (let c in this.mapLayerCanvases) {
-            this.mapLayerCanvases[c].classList.remove('non-active-layer');
-            if (c !== 'layer-' + layerID && this.muteLayers) {
-                this.mapLayerCanvases[c].classList.add('non-active-layer')
+            this.mapLayerCanvases[b].classList.remove('non-active-layer');
+            if (b !== layerID && this.muteLayers) {
+                this.mapLayerCanvases[b].classList.add('non-active-layer');
             }
         }
         this.activeLayer = layerID;
